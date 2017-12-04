@@ -22,7 +22,7 @@
 ########################################
 
 TARGET = bank_tanks
-OBJECTS = main.o
+OBJECTS = main.o Model.o
 
 LOCAL_INC_PATH = /usr/local/include/
 LOCAL_LIB_PATH = /usr/local/lib/
@@ -144,4 +144,4 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(CFLAGS) -o $@ $^ $(LIBPATH) $(LIBS)
 
 # DEPENDENCIES
-main.o: main.cpp
+main.o: main.cpp Model.cpp

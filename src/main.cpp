@@ -30,7 +30,6 @@
 #include <vector>					// for vector
 
 #include <CSCI441/FramebufferUtils3.hpp>
-#include <CSCI441/modelLoader3.hpp>
 #include <CSCI441/objects3.hpp>
 #include <CSCI441/ShaderProgram3.hpp>
 
@@ -39,12 +38,17 @@
 #include <iostream>
 using namespace std;
 
+#include "Model.h"
+
 
 //******************************************************************************
 //
 // Global Parameters
 
-int windowWidth, windowHeight;
+//window params
+int windowWidth, windowHeight; 
+
+// input flags
 bool controlDown = false;
 bool leftMouseDown = false;
 bool moveLeft = false;
@@ -53,29 +57,15 @@ bool moveUp = false;
 bool moveDown = false;
 glm::vec2 mousePosition( -9999.0f, -9999.0f );
 
-glm::vec3 cameraAngles( 1.82f, 2.01f, 35.0f );
-glm::vec3 cameraOffset(   0.0f, 10.0f, 0.0f );
-glm::vec3 upVector(    0.0f,  1.0f,  0.0f );
+glm::vec3 cameraAngles( 1.82f, 2.01f, 35.0f ); //arcball (theta, phi, radius)
+glm::vec3 cameraOffset; 					   //camera offset from player
+glm::vec3 upVector( 0.0f,  1.0f,  0.0f );
 
+//TODO: move to separate class
 glm::vec3 tankPos(0.0f,0.0f,0.0f);
 float tankRot = 0.0f;
-float tankWaddleAmt = 0.0f;
 float tank_speed = 5.f;
 CSCI441::ModelLoader* tankBaseModel = NULL;
-
-struct enemyPenguin{
-	glm::vec3 pos;
-	float rot;
-	float startRot;
-	float waddleAmt;
-	glm::vec3 hitVel;
-	bool dead = false;
-	const float speed = 3.f;
-	const float gravity = -9.81f;
-};
-vector<enemyPenguin> enemies;
-float spawnRate = 5.f;
-float currSpawnTime = spawnRate - 5.f; // 5 second buffer time
 
 GLuint platformVAOd;
 GLuint platformTextureHandle;
@@ -514,13 +504,13 @@ void setupBuffers() {
 	glGenVertexArrays( 6, skyboxVAOds );
 
 	for( int i = 0; i < 6; i++ ) {
-	  glBindVertexArray( skyboxVAOds[i] );
-	  glGenBuffers(2, vbods);
-	  glBindBuffer( GL_ARRAY_BUFFER, vbods[0] );
-	  glBufferData( GL_ARRAY_BUFFER, sizeof(skyboxVertices[i]), skyboxVertices[i], GL_STATIC_DRAW );
-	  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, vbods[1] );
-	  glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), skyboxIndices, GL_STATIC_DRAW );
-	  glEnableVertexAttribArray( attrib_vPos_loc );
+		glBindVertexArray( skyboxVAOds[i] );
+		glGenBuffers(2, vbods);
+		glBindBuffer( GL_ARRAY_BUFFER, vbods[0] );
+		glBufferData( GL_ARRAY_BUFFER, sizeof(skyboxVertices[i]), skyboxVertices[i], GL_STATIC_DRAW );
+		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, vbods[1] );
+		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), skyboxIndices, GL_STATIC_DRAW );
+		glEnableVertexAttribArray( attrib_vPos_loc );
 		glVertexAttribPointer( attrib_vPos_loc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTextured), (void*) 0 );
 		glEnableVertexAttribArray( attrib_vTextureCoord_loc );
 		glVertexAttribPointer( attrib_vTextureCoord_loc, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTextured), (void*) (sizeof(float) * 3) );
