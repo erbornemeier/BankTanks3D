@@ -1,0 +1,22 @@
+TODO:
+(Next = *)
+	
+	[X] Accept smooth movement based on timestep so there is smooth 	movement through various framerates
+	--Completed by Easton
+
+*	[ ] Create model loader class to store positional information
+		and to have draw functionality abstracted from main
+
+	[ ] Create player and enemy tank classes to deal with shooting,
+		storing the box colliders, and particle systems
+
+	[ ] Fix tank model lighting/ add texture to tank model
+			-using a purely red image for now to test
+
+	[ ] Load in text file level config and place cubes in world where
+		the text file specifies to create walls
+
+	[ ] Add ability to rotate top turret towards the mouse 
+
+	[ ] Add particle system spawning underneath the tank that fades out slowly over time to simulate the treads depressing the surface
+
