@@ -51,24 +51,17 @@ bool moveLeft = false;
 bool moveRight = false;
 bool moveUp = false;
 bool moveDown = false;
-bool bellySlide = false;
-bool attack = false;
 glm::vec2 mousePosition( -9999.0f, -9999.0f );
 
-
 glm::vec3 cameraAngles( 1.82f, 2.01f, 35.0f );
-glm::vec3 eyePoint(   10.0f, 10.0f, 10.0f );
-glm::vec3 lookAtPoint( 0.0f,  0.0f,  0.0f );
+glm::vec3 cameraOffset(   0.0f, 10.0f, 0.0f );
 glm::vec3 upVector(    0.0f,  1.0f,  0.0f );
 
-glm::vec3 heroPos(0.0f,0.0f,0.0f);
-float heroRot = 0.0f;
-float heroWaddleAmt = 0.0f;
-float hero_speed = 5.f;
-CSCI441::ModelLoader* penguinModel = NULL;
-void beakAttack();
-int enemiesKilled = 0;
-bool playerDead = false;
+glm::vec3 tankPos(0.0f,0.0f,0.0f);
+float tankRot = 0.0f;
+float tankWaddleAmt = 0.0f;
+float tank_speed = 5.f;
+CSCI441::ModelLoader* tankBaseModel = NULL;
 
 struct enemyPenguin{
 	glm::vec3 pos;
@@ -105,12 +98,6 @@ CSCI441::ShaderProgram* postprocessingShaderProgram = NULL;
 GLint uniform_post_proj_loc, uniform_post_fbo_loc;
 GLint attrib_post_vpos_loc, attrib_post_vtex_loc;
 
-CSCI441::ShaderProgram* ghostShaderProgram = NULL;
-GLint uniform_ghost_mv_loc, uniform_ghost_v_loc, uniform_ghost_p_loc ,uniform_ghost_norm_loc;
-GLint uniform_ghost_md_loc, uniform_ghost_ms_loc, uniform_ghost_ma_loc, uniform_ghost_s_loc;
-GLint uniform_ghost_txtr_loc;
-GLint attrib_ghost_vpos_loc, attrib_ghost_vnorm_loc, attrib_ghost_vtex_loc;
-
 GLuint fbo;
 int framebufferWidth = 1024, framebufferHeight = 1024;
 GLuint framebufferTextureHandle;
@@ -123,9 +110,10 @@ GLuint texturedQuadVAO;
 // Helper Functions
 
 void convertSphericalToCartesian() {
-	eyePoint.x = cameraAngles.z * sinf( cameraAngles.x ) * sinf( cameraAngles.y );
-	eyePoint.y = cameraAngles.z * -cosf( cameraAngles.y );
-	eyePoint.z = cameraAngles.z * -cosf( cameraAngles.x ) * sinf( cameraAngles.y );
+	cameraOffset.x = cameraAngles.z * sinf( cameraAngles.x ) * sinf( cameraAngles.y );
+	cameraOffset.y = cameraAngles.z * -cosf( cameraAngles.y );
+	cameraOffset.z = cameraAngles.z * -cosf( cameraAngles.x ) * sinf( cameraAngles.y );
+
 }
 
 bool registerOpenGLTexture(unsigned char *textureData,
@@ -189,13 +177,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			case 'Q':
 				glfwSetWindowShouldClose(window, GLFW_TRUE);
 				break;
-			case GLFW_KEY_LEFT_SHIFT:
-				bellySlide = true;
-				break;
-			case GLFW_KEY_SPACE:
-				attack = true;
-				beakAttack();
-				break;
 		}
 	}
 	else if (action == GLFW_RELEASE){
@@ -211,12 +192,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 				break;
 			case 'D':
 				moveRight = false;
-				break;
-			case GLFW_KEY_LEFT_SHIFT:
-				bellySlide = false;
-				break;
-			case GLFW_KEY_SPACE:
-				attack = false;
 				break;
 		}
 	}
@@ -400,6 +375,7 @@ void setupTextures() {
 }
 
 void setupShaders() {
+	//basic texture shader for platform and skybox
 	textureShaderProgram = new CSCI441::ShaderProgram( "shaders/textureShader.v.glsl", "shaders/textureShader.f.glsl" );
 		uniform_modelMtx_loc         = textureShaderProgram->getUniformLocation( "modelMtx" );
 		uniform_viewProjetionMtx_loc = textureShaderProgram->getUniformLocation( "viewProjectionMtx" );
@@ -408,6 +384,7 @@ void setupShaders() {
 		attrib_vPos_loc				 = textureShaderProgram->getAttributeLocation( "vPos" );
 		attrib_vTextureCoord_loc 	 = textureShaderProgram->getAttributeLocation( "vTextureCoord" );
 
+	//texture shader to implement the phong lighting model
 	modelPhongShaderProgram = new CSCI441::ShaderProgram( "shaders/texturingPhong.v.glsl", "shaders/texturingPhong.f.glsl" );
 		uniform_phong_mv_loc 		= modelPhongShaderProgram->getUniformLocation( "modelviewMtx" );
 		uniform_phong_v_loc 		= modelPhongShaderProgram->getUniformLocation( "viewMtx" );
@@ -422,25 +399,12 @@ void setupShaders() {
 		attrib_phong_vnorm_loc 		= modelPhongShaderProgram->getAttributeLocation( "vNormal" );
 		attrib_phong_vtex_loc 		= modelPhongShaderProgram->getAttributeLocation( "vTexCoord" );
 
+	//framebuffer shader for postprocessing effects
 	postprocessingShaderProgram = new CSCI441::ShaderProgram( "shaders/passThrough.v.glsl", "shaders/passThrough.f.glsl" );
 		uniform_post_proj_loc		= postprocessingShaderProgram->getUniformLocation( "projectionMtx" );
 		uniform_post_fbo_loc		= postprocessingShaderProgram->getUniformLocation( "fbo" );
 		attrib_post_vpos_loc		= postprocessingShaderProgram->getAttributeLocation( "vPos" );
 		attrib_post_vtex_loc		= postprocessingShaderProgram->getAttributeLocation( "vTexCoord" );
-
-	ghostShaderProgram = new CSCI441::ShaderProgram( "shaders/texturingPhong.v.glsl", "shaders/ghostShader.f.glsl" );
-		uniform_ghost_mv_loc 		= modelPhongShaderProgram->getUniformLocation( "modelviewMtx" );
-		uniform_ghost_v_loc 		= modelPhongShaderProgram->getUniformLocation( "viewMtx" );
-		uniform_ghost_p_loc 		= modelPhongShaderProgram->getUniformLocation( "projectionMtx" );
-		uniform_ghost_norm_loc 		= modelPhongShaderProgram->getUniformLocation( "normalMtx" );
-		uniform_ghost_md_loc 		= modelPhongShaderProgram->getUniformLocation( "materialDiffuse" );
-		uniform_ghost_ms_loc 		= modelPhongShaderProgram->getUniformLocation( "materialSpecular" );
-		uniform_ghost_ma_loc 		= modelPhongShaderProgram->getUniformLocation( "materialAmbient" );
-		uniform_ghost_s_loc			= modelPhongShaderProgram->getUniformLocation( "materialShininess" );
-		uniform_ghost_txtr_loc 		= modelPhongShaderProgram->getUniformLocation( "txtr" );
-		 attrib_ghost_vpos_loc 		= modelPhongShaderProgram->getAttributeLocation( "vPos" );
-		 attrib_ghost_vnorm_loc 		= modelPhongShaderProgram->getAttributeLocation( "vNormal" );
-		 attrib_ghost_vtex_loc 		= modelPhongShaderProgram->getAttributeLocation( "vTexCoord" );
 }
 
 // setupBuffers() //////////////////////////////////////////////////////////////
@@ -458,8 +422,8 @@ void setupBuffers() {
 	//
 	// Model
 
-	penguinModel = new CSCI441::ModelLoader();
-	penguinModel->loadModelFile( "models/waddles/waddles_neutral.obj" );
+	tankBaseModel = new CSCI441::ModelLoader();
+	tankBaseModel->loadModelFile( "models/tank/TankBase.obj" );
 
 	//////////////////////////////////////////
 	//
@@ -615,7 +579,7 @@ void setupFramebuffer() {
     //allocate space for the texture
     glTexImage2D(GL_TEXTURE_2D,  	//texture target
     			 0,				 	//mipmap level
-    			 GL_RGBA,			//internal format
+    			 GL_RGBA,			//internal formadfsaft
     			 framebufferWidth,	//width
     			 framebufferHeight, //height
     			 0,					//border
@@ -643,152 +607,32 @@ void setupFramebuffer() {
 //
 // Game Controller functions - this is where we move and control game objects
 
-void beakAttack(){
-	for (enemyPenguin& e: enemies){
-		if (glm::length(heroPos - e.pos) < 3.0){
-			e.hitVel.y = 10.0f;
-		}
-	}
-}
-
-bool doesCollide(glm::vec3 pos, int enemyIndex){
-	for (int i = 0; i < enemies.size(); i++){
-		if (i != enemyIndex && glm::length(pos - enemies[i].pos) < 1.0){
-			return true;
-		}
-	}
-	if (glm::length(heroPos - pos) < 1.0){
-		return true;
-	}
-	return false;
-}
-
-bool playerCollide(){
-	for (int i = 0; i < enemies.size(); i++){
-		if (glm::length(heroPos - enemies[i].pos) < 1.0){
-			return true;
-		}
-	}
-	return false;
-}
 
 void moveHero(float tstep){
 	//movement from key presses
 	if (moveUp) {
-		glm::vec3 startPos = heroPos;
+		glm::vec3 startPos = tankPos;
 
-		heroPos.z += hero_speed * tstep * cos(heroRot);
-		heroPos.x += hero_speed * tstep * sin(heroRot);
-		eyePoint.z += hero_speed * tstep * cos(heroRot);
-		eyePoint.x += hero_speed * tstep * sin(heroRot);
-		
+		tankPos.z += tank_speed * tstep * cos(tankRot);
+		tankPos.x += tank_speed * tstep * sin(tankRot);
+		cameraOffset.z += tank_speed * tstep * cos(tankRot);
+		cameraOffset.x += tank_speed * tstep * sin(tankRot);
+	}
+	if (moveDown) {
+		glm::vec3 startPos = tankPos;
 
-		if (bellySlide){
-			heroPos.z += hero_speed * tstep * cos(heroRot);
-			heroPos.x += hero_speed * tstep * sin(heroRot);
-			eyePoint.z += hero_speed * tstep * cos(heroRot);
-			eyePoint.x += hero_speed * tstep * sin(heroRot);
-		}
-		if (playerCollide()) heroPos = startPos;
+		tankPos.z -= tank_speed * tstep * cos(tankRot);
+		tankPos.x -= tank_speed * tstep * sin(tankRot);
+		cameraOffset.z -= tank_speed * tstep * cos(tankRot);
+		cameraOffset.x -= tank_speed * tstep * sin(tankRot);
 	}
 
-	glm::vec3 startPos = heroPos;
-	if (moveRight) heroRot -= hero_speed * tstep * 0.5;
-	if (moveLeft)  heroRot += hero_speed * tstep * 0.5;
-	if (playerCollide()) heroPos = startPos;
-
-	heroPos.y -= 9.81 * tstep * 3.0f;
-	if (heroPos.y < 0 && (abs(heroPos.x) < platformSize && abs(heroPos.z) < platformSize)){
-		heroPos.y += 9.81* tstep * 3.0f;;
-	}
-
-	//waddling oscilation
-	if (moveUp || moveRight || moveLeft || abs(heroWaddleAmt) > 0.1)
-		heroWaddleAmt = sin(glfwGetTime()*10) * .25 ;
-	else 
-		heroWaddleAmt = 0.0;
-
-	if (heroPos.y < -50.0f){
-		cout << "TOTAL ENEMIES KILLED: " << enemiesKilled << endl;
-		cout << "GAME OVER" << endl;
-		playerDead = true;
-	}
-}
-
-void moveEnemy(enemyPenguin& e, float tstep){
-	e.pos.z += e.speed * tstep * cos(e.rot);
-	e.pos.x += e.speed * tstep * sin(e.rot);
-	if (glm::length(e.pos - heroPos) > 10.0f){
-		e.pos.z += e.speed * tstep * cos(e.rot);
-		e.pos.x += e.speed * tstep * sin(e.rot);
-	}
-
-	//hitVels
-	e.pos += e.hitVel * tstep * 20.0f ;
-	if (abs(e.hitVel.x) < 0.2){
-		e.hitVel.x = 0;
-	}
-	if (abs(e.hitVel.y) < 0.2){
-		e.hitVel.y = 0;
-	}
-	if (abs(e.hitVel.z) < 0.2){
-		e.hitVel.z = 0;
-	}
-
-	if (abs(e.hitVel.x) > 0){
-		e.hitVel.x -= 9.81 * tstep * 3.0f;
-	}
-	if (e.hitVel.y > 0){
-		e.hitVel.y -= 9.81 * tstep * 3.0f;
-		e.pos.z += e.speed * tstep * cos(e.rot) * 5.0f;
-		e.pos.x += e.speed * tstep * sin(e.rot) * 5.0f;
-	}
-	if (abs(e.hitVel.z) > 0){
-		e.hitVel.z -= 9.81 * tstep * 3.0f;
-	}
-
-
-	//gravity
-	e.pos.y -= 9.81 * tstep * 3.0f;
-	if (e.pos.y < 0 && (abs(e.pos.x) < platformSize && abs(e.pos.z) < platformSize)){
-		e.pos.y = 0;
-	}
-
-	glm::vec3 toPlayer = glm::normalize(heroPos - e.pos);
-	float toPlayerTheta = atan2(toPlayer.x, toPlayer.z);
-	while (e.rot > 6.28) e.rot < 6.28;
-	e.rot += (toPlayerTheta - e.rot)*0.1;
-	e.waddleAmt = sin(glfwGetTime()*10 + e.startRot) * .25 ;
-
-	if (!e.dead && e.pos.y < -50.0f){
-		enemiesKilled += 1;
-		e.dead = true;
-	}
-}
-
-void spawnEnemies(float tstep){
-	currSpawnTime += tstep;
-	if (currSpawnTime > spawnRate){
-		currSpawnTime -= spawnRate;
-		enemyPenguin newEnemy;
-		newEnemy.pos = glm::vec3(2.0,0.0,2.0);
-		newEnemy.rot = 0.f;
-		newEnemy.startRot = (rand() % 628) / 100.0f;
-		newEnemy.waddleAmt = 0.f;
-		enemies.push_back(newEnemy);
-	}
+	if (moveRight) tankRot -= tank_speed * tstep;
+	if (moveLeft)  tankRot += tank_speed * tstep;
 }
 
 void updateScene(float tstep){
 	moveHero(tstep);
-	spawnEnemies(tstep);
-	for (int i = 0; i < enemies.size(); i++){
-		glm::vec3 startPos = enemies[i].pos;
-		moveEnemy(enemies[i], tstep);
-		if (doesCollide(enemies[i].pos, i)){
-			enemies[i].pos = startPos;
-		}
-	}
 	convertSphericalToCartesian();
 }
 
@@ -804,6 +648,7 @@ void updateScene(float tstep){
 void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glm::mat4 m, vp = projectionMatrix * viewMatrix;
 
+	// draw the skybox
 	// Use our texture shader program
 	textureShaderProgram->useProgram();
 
@@ -814,7 +659,6 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glm::vec3 white(1,1,1);
 	glUniform3fv( uniform_color_loc, 1, &white[0] );
 
-	// draw the skybox
 	for( unsigned int i = 0; i < 6; i++ ) {
 		glBindTexture( GL_TEXTURE_2D, skyboxHandles[i] );
 		glBindVertexArray( skyboxVAOds[i] );
@@ -826,23 +670,15 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glBindVertexArray( platformVAOd );
 	glDrawElements( GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (void*)0 );
 
-	m = glm::translate( m, heroPos );
-	m = glm::rotate(m, heroRot, glm::vec3(0,1,0));
-	if (bellySlide&& !attack){
-		m = glm::rotate(m, heroWaddleAmt*0.5f, glm::vec3(0,0,1));
-		m = glm::rotate(m, 3.14f/3.0f, glm::vec3(1,0,0));
-	}
-	else {
-		m = glm::rotate(m, heroWaddleAmt, glm::vec3(0,0,1));
-	}
-	if (attack){
-		m = glm::rotate(m, 3.14f/9.0f, glm::vec3(1,0,0));
-	}
+	m = glm::scale(m, glm::vec3(1.0,1.5,1.0));
+	m = glm::translate( m, tankPos + glm::vec3(0,0.1,0) );
+	m = glm::rotate(m, tankRot, glm::vec3(0,1,0));
 
 	glm::mat4 mv = viewMatrix * m;
 	glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
 
 
+	// draw the player
 	// use our textured phong shader program for the model
 	modelPhongShaderProgram->useProgram();
 	glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
@@ -851,39 +687,10 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
 	glUniform1i( uniform_phong_txtr_loc, 0 );
 
-	// draw the player
-	penguinModel->draw( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
+	tankBaseModel->draw( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
 								uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
 								 GL_TEXTURE0);
 
-	//draw enemies
-	ghostShaderProgram->useProgram();
-	
-
-	vp = projectionMatrix * viewMatrix;
-	for (enemyPenguin& e: enemies){
-		if (!e.dead){
-			m = glm::mat4();
-			m = glm::translate( m, e.pos );
-			m = glm::scale(m, glm::vec3(0.75,0.75,0.75));
-			m = glm::rotate(m, e.rot, glm::vec3(0,1,0));
-			m = glm::rotate(m, e.waddleAmt, glm::vec3(0,0,1));
-			if (glm::length(e.pos - heroPos) > 10.0f)
-				m = glm::rotate(m, 3.14f/3.0f, glm::vec3(1,0,0));
-			mv = viewMatrix * m;
-			nMtx = glm::transpose( glm::inverse( mv ) );
-			//TODO WADDLES
-			// draw the model
-			glUniformMatrix4fv( uniform_ghost_mv_loc, 1, GL_FALSE, &mv[0][0] );
-			glUniformMatrix4fv( uniform_ghost_v_loc, 1, GL_FALSE, &viewMatrix[0][0] );
-			glUniformMatrix4fv( uniform_ghost_p_loc, 1, GL_FALSE, &projectionMatrix[0][0] );
-			glUniformMatrix4fv( uniform_ghost_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
-			glUniform1i( uniform_ghost_txtr_loc, 0 );
-			penguinModel->draw( attrib_ghost_vpos_loc, attrib_ghost_vnorm_loc, attrib_ghost_vtex_loc,
-								uniform_ghost_md_loc, uniform_ghost_ms_loc, uniform_ghost_s_loc, uniform_ghost_ma_loc,
-								 GL_TEXTURE0);
-		}
-	}
 }
 
 ///*****************************************************************************
@@ -940,7 +747,7 @@ int main( int argc, char *argv[] ) {
 		glm::mat4 projectionMatrix = glm::perspective( 45.0f, framebufferWidth / (float) framebufferHeight, 0.001f, 300.0f );
 
 		// set up our look at matrix to position our camera
-		glm::mat4 viewMatrix = glm::lookAt( eyePoint + heroPos, heroPos, upVector );
+		glm::mat4 viewMatrix = glm::lookAt( cameraOffset + tankPos, tankPos, upVector );
 
 		//get the time elapsed after all the processing happened
 		float timeStep = glfwGetTime() - start;
@@ -979,7 +786,6 @@ int main( int argc, char *argv[] ) {
 		glfwSwapBuffers(window);		// flush the OpenGL commands and make sure they get rendered!
 		glfwPollEvents();				// check for any events and signal to redraw screen
 		
-		if (playerDead) break;
 	}
 
 	glfwDestroyWindow( window );// clean up and close our window

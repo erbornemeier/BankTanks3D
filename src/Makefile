@@ -21,8 +21,8 @@
 ##
 ########################################
 
-TARGET = a7
-OBJECTS = main.o Particle.o ParticleSystem.o
+TARGET = bank_tanks
+OBJECTS = main.o
 
 LOCAL_INC_PATH = /usr/local/include/
 LOCAL_LIB_PATH = /usr/local/lib/
