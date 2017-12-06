@@ -39,8 +39,8 @@ void PlayerTank::draw(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc,
 glm::mat4 PlayerTank::getModelMatrix(){
 	glm::mat4 m;
 	m = glm::scale(m, scale);
-	m = glm::rotate(m, rotation.y, glm::vec3(0,1,0));
 	m = glm::translate(m, position);
+	m = glm::rotate(m, rotation.y, glm::vec3(0,1,0));
 	return m;
 }
 
