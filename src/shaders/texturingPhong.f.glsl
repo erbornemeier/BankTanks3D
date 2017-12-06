@@ -33,8 +33,8 @@ void main() {
     
     fragColorOut = diffuse + specular + ambient;
     
+    vec4 texel = texture( txtr, texCoord );
+    fragColorOut *= texel;
 
-    //temporarily removed***
-    //vec4 texel = texture( txtr, texCoord );
-    //fragColorOut *= texel;
+    fragColorOut = vec4(1,1,1,1);
 }

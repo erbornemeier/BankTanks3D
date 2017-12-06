@@ -38,7 +38,7 @@
 #include <iostream>
 using namespace std;
 
-#include "Model.h"
+#include "PlayerTank.h"
 
 
 //******************************************************************************
@@ -62,6 +62,7 @@ glm::vec3 cameraOffset; 					   //camera offset from player
 glm::vec3 upVector( 0.0f,  1.0f,  0.0f );
 
 //TODO: move to separate class
+PlayerTank* playerTank;
 glm::vec3 tankPos(0.0f,0.0f,0.0f);
 float tankRot = 0.0f;
 float tank_speed = 5.f;
@@ -413,13 +414,14 @@ void setupBuffers() {
 	// Model
 
 	tankBaseModel = new CSCI441::ModelLoader();
-	tankBaseModel->loadModelFile( "models/tank/TankBase.obj" );
+	tankBaseModel->loadModelFile( "models/waddles/waddles_neutral.obj" );
 
+	playerTank = new PlayerTank(tankBaseModel);
 	//////////////////////////////////////////
 	//
 	// PLATFORM
 
-	platformSize = 20.0f;
+	platformSize = 100.0f;
 
 	VertexTextured platformVertices[4] = {
 			{ -platformSize, 0.0f, -platformSize,   0.0f,  0.0f }, // 0 - BL
@@ -600,25 +602,10 @@ void setupFramebuffer() {
 
 void moveHero(float tstep){
 	//movement from key presses
-	if (moveUp) {
-		glm::vec3 startPos = tankPos;
-
-		tankPos.z += tank_speed * tstep * cos(tankRot);
-		tankPos.x += tank_speed * tstep * sin(tankRot);
-		cameraOffset.z += tank_speed * tstep * cos(tankRot);
-		cameraOffset.x += tank_speed * tstep * sin(tankRot);
-	}
-	if (moveDown) {
-		glm::vec3 startPos = tankPos;
-
-		tankPos.z -= tank_speed * tstep * cos(tankRot);
-		tankPos.x -= tank_speed * tstep * sin(tankRot);
-		cameraOffset.z -= tank_speed * tstep * cos(tankRot);
-		cameraOffset.x -= tank_speed * tstep * sin(tankRot);
-	}
-
-	if (moveRight) tankRot -= tank_speed * tstep;
-	if (moveLeft)  tankRot += tank_speed * tstep;
+	if (moveUp)    playerTank->moveForward(tstep);
+	if (moveDown)  playerTank->moveBackward(tstep);
+	if (moveRight) playerTank->rotateRight(tstep);
+	if (moveLeft)  playerTank->rotateLeft(tstep);
 }
 
 void updateScene(float tstep){
@@ -660,15 +647,13 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glBindVertexArray( platformVAOd );
 	glDrawElements( GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (void*)0 );
 
-	m = glm::scale(m, glm::vec3(1.0,1.5,1.0));
-	m = glm::translate( m, tankPos + glm::vec3(0,0.1,0) );
-	m = glm::rotate(m, tankRot, glm::vec3(0,1,0));
+	// draw the player
+	//playerTank->setScale(glm::vec3(1.0,1.5,1.0));
+	m = playerTank->getModelMatrix();
 
 	glm::mat4 mv = viewMatrix * m;
 	glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
 
-
-	// draw the player
 	// use our textured phong shader program for the model
 	modelPhongShaderProgram->useProgram();
 	glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
@@ -677,9 +662,9 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
 	glUniform1i( uniform_phong_txtr_loc, 0 );
 
-	tankBaseModel->draw( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
-								uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
-								 GL_TEXTURE0);
+	playerTank->draw( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
+					  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
+					  GL_TEXTURE0);
 
 }
 
@@ -737,7 +722,7 @@ int main( int argc, char *argv[] ) {
 		glm::mat4 projectionMatrix = glm::perspective( 45.0f, framebufferWidth / (float) framebufferHeight, 0.001f, 300.0f );
 
 		// set up our look at matrix to position our camera
-		glm::mat4 viewMatrix = glm::lookAt( cameraOffset + tankPos, tankPos, upVector );
+		glm::mat4 viewMatrix = glm::lookAt( cameraOffset + playerTank->getPosition(), playerTank->getPosition(), upVector );
 
 		//get the time elapsed after all the processing happened
 		float timeStep = glfwGetTime() - start;
