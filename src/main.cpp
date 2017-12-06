@@ -66,7 +66,8 @@ PlayerTank* playerTank;
 glm::vec3 tankPos(0.0f,0.0f,0.0f);
 float tankRot = 0.0f;
 float tank_speed = 5.f;
-CSCI441::ModelLoader* tankBaseModel = NULL;
+CSCI441::ModelLoader* tankBaseModel = NULL,
+					* tankTurretModel = NULL;
 
 GLuint platformVAOd;
 GLuint platformTextureHandle;
@@ -410,8 +411,10 @@ void setupBuffers() {
 
 	tankBaseModel = new CSCI441::ModelLoader();
 	tankBaseModel->loadModelFile( "models/tank/T34.obj" );
+	tankTurretModel = new CSCI441::ModelLoader();
+	tankTurretModel->loadModelFile( "models/tank/T34.obj" );
 
-	playerTank = new PlayerTank(tankBaseModel);
+	playerTank = new PlayerTank(tankBaseModel, tankTurretModel);
 	//////////////////////////////////////////
 	//
 	// PLATFORM
@@ -662,7 +665,7 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glBindVertexArray( platformVAOd );
 	glDrawElements( GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (void*)0 );
 
-	// draw the player
+	// draw the player base
 	playerTank->setScale(glm::vec3(2.0,2.0,2.0));
 	m = playerTank->getModelMatrix();
 
@@ -677,7 +680,26 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
 	glUniform1i( uniform_phong_txtr_loc, 0 );
 
-	playerTank->draw( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
+	playerTank->drawBase( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
+					  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
+					  GL_TEXTURE0);
+
+	// draw the player turret
+	playerTank->setScale(glm::vec3(1.0,1.0,1.0));
+	m = playerTank->getTurretModelMatrix();
+
+	mv = viewMatrix * m;
+	nMtx = glm::transpose( glm::inverse( mv ) );
+
+	// use our textured phong shader program for the model
+	modelPhongShaderProgram->useProgram();
+	glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
+	glUniformMatrix4fv( uniform_phong_v_loc, 1, GL_FALSE, &viewMatrix[0][0] );
+	glUniformMatrix4fv( uniform_phong_p_loc, 1, GL_FALSE, &projectionMatrix[0][0] );
+	glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
+	glUniform1i( uniform_phong_txtr_loc, 0 );
+
+	playerTank->drawTurret( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
 					  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
 					  GL_TEXTURE0);
 
