@@ -25,14 +25,19 @@ public:
 	void moveBackward(float tstep);
 	void rotateLeft(float tstep);
 	void rotateRight(float tstep);
+	void rotateTurretLeft(float timeStep);
+	void rotateTurretRight(float timeStep);
 	void setScale(glm::vec3 scale);
 
-	void draw(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc, 
+	void drawBase(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc, 
+		      GLint md_loc, GLint ms_loc, GLint s_loc, GLint ma_loc, GLint txtr);
+	void drawTurret(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc, 
 		      GLint md_loc, GLint ms_loc, GLint s_loc, GLint ma_loc, GLint txtr);
 
 	glm::vec3 getPosition();
 	glm::vec3 getBaseRotation();
 	glm::mat4 getModelMatrix();
+	glm::mat4 getTurretModelMatrix();
 
 private:
 
@@ -43,7 +48,8 @@ private:
 	glm::mat4 modelMatrix;
 
 	//storage location for the drawable model
-	CSCI441::ModelLoader* model = NULL;
+	CSCI441::ModelLoader* base = NULL,
+						* turret =NULL;
 
 	const float SPEED = 5.0f, ROT_SPEED = 2.5f;
 };  		
