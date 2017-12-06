@@ -14,7 +14,8 @@ class PlayerTank{
 
 public:
 
-	PlayerTank(CSCI441::ModelLoader* tankBase, 
+	PlayerTank(CSCI441::ModelLoader* tankBase,
+			   CSCI441::ModelLoader* tankTurret, 
 			   glm::vec3 pos = glm::vec3(0,0,0), 
 			   glm::vec3 rot = glm::vec3(0,0,0),
 			   glm::vec3 scl = glm::vec3(1,1,1));

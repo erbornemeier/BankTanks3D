@@ -555,6 +555,7 @@ void setupBuffers() {
 	glBufferData( GL_ARRAY_BUFFER, sizeof(texturedQuadVerts), texturedQuadVerts, GL_STATIC_DRAW );
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, vbods[1] );
 	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(texturedQuadIndices), texturedQuadIndices, GL_STATIC_DRAW );
+	
 	postprocessingShaderProgram->useProgram();
 	glEnableVertexAttribArray(attrib_post_vpos_loc);
 	glVertexAttribPointer(attrib_post_vpos_loc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTextured), (void*) 0);
