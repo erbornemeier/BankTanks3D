@@ -72,8 +72,8 @@ GLuint platformVAOd;
 GLuint platformTextureHandle;
 float platformSize;
 
-GLuint skyboxVAOds[6];				   // all of our skybox VAOs
-GLuint skyboxHandles[6];               // all of our skybox handles
+GLuint skyboxVAO;				   // all of our skybox VAOs
+GLuint skyboxTextureHandle;               // all of our skybox handles
 
 CSCI441::ShaderProgram* textureShaderProgram = NULL;
 GLint uniform_modelMtx_loc, uniform_viewProjetionMtx_loc, uniform_tex_loc, uniform_color_loc;
@@ -90,7 +90,7 @@ GLint uniform_post_proj_loc, uniform_post_fbo_loc;
 GLint attrib_post_vpos_loc, attrib_post_vtex_loc;
 
 GLuint fbo;
-int framebufferWidth = 1024, framebufferHeight = 1024;
+int framebufferWidth = 1920, framebufferHeight = 1080;
 GLuint framebufferTextureHandle;
 GLuint rbo;
 
@@ -351,17 +351,12 @@ void setupGLEW() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 void setupTextures() {
-	platformTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/ice_floor.jpg" );
+	platformTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/SandBackground.png" );
 
 	// and get handles for our full skybox
   printf( "[INFO]: registering skybox...\n" );
   fflush( stdout );
-  skyboxHandles[0] = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/arctic-ice_bk.tga"   );
-  skyboxHandles[3] = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/arctic-ice_rt.tga"  );
-  skyboxHandles[2] = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/arctic-ice_ft.tga"  );
-  skyboxHandles[1] = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/arctic-ice_lf.tga"   );
-  skyboxHandles[4] = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/arctic-ice_dn.tga" );
-  skyboxHandles[5] = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/arctic-ice_up.tga"  );
+  skyboxTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/desert.png"   );
   printf( "[INFO]: skybox textures read in and registered!\n\n" );
 }
 
@@ -414,7 +409,7 @@ void setupBuffers() {
 	// Model
 
 	tankBaseModel = new CSCI441::ModelLoader();
-	tankBaseModel->loadModelFile( "models/waddles/waddles_neutral.obj" );
+	tankBaseModel->loadModelFile( "models/tank/T34.obj" );
 
 	playerTank = new PlayerTank(tankBaseModel);
 	//////////////////////////////////////////
@@ -454,69 +449,89 @@ void setupBuffers() {
 	//
 	// SKYBOX
 
-	unsigned short skyboxIndices[4] = {
-		0, 1, 2, 3
-	};
 
+	// create our skybox vertex array
 	GLfloat skyboxDim = 100.0f;
-	VertexTextured skyboxVertices[6][4] = {
-		{ // back
-		  { -skyboxDim, -skyboxDim, -skyboxDim,   0.0f,  0.0f }, // 0 - BL
-		  { -skyboxDim, -skyboxDim,  skyboxDim,  -1.0f,  0.0f }, // 1 - BR
-		  { -skyboxDim,  skyboxDim, -skyboxDim,   0.0f,  1.0f }, // 2 - TL
-		  { -skyboxDim,  skyboxDim,  skyboxDim,  -1.0f,  1.0f }  // 3 - TR
-		},
-
-		{ // right
-		  { -skyboxDim, -skyboxDim,  skyboxDim,   0.0f,  0.0f }, // 0 - BL
-		  {  skyboxDim, -skyboxDim,  skyboxDim,  -1.0f,  0.0f }, // 1 - BR
-		  { -skyboxDim,  skyboxDim,  skyboxDim,   0.0f,  1.0f }, // 2 - TL
-		  {  skyboxDim,  skyboxDim,  skyboxDim,  -1.0f,  1.0f }  // 3 - TR
-		},
-
-		{ // front
-		  {  skyboxDim, -skyboxDim, -skyboxDim,   0.0f,  0.0f }, // 0 - BL
-		  {  skyboxDim, -skyboxDim,  skyboxDim,   1.0f,  0.0f }, // 1 - BR
-		  {  skyboxDim,  skyboxDim, -skyboxDim,   0.0f,  1.0f }, // 2 - TL
-		  {  skyboxDim,  skyboxDim,  skyboxDim,   1.0f,  1.0f }  // 3 - TR
-		},
-
-		{ // left
-		  { -skyboxDim, -skyboxDim, -skyboxDim,   0.0f,  0.0f }, // 0 - BL
-		  {  skyboxDim, -skyboxDim, -skyboxDim,   1.0f,  0.0f }, // 1 - BR
-		  { -skyboxDim,  skyboxDim, -skyboxDim,   0.0f,  1.0f }, // 2 - TL
-		  {  skyboxDim,  skyboxDim, -skyboxDim,   1.0f,  1.0f }  // 3 - TR
-		},
-
-		{ // bottom
-			{ -skyboxDim, -skyboxDim, -skyboxDim,   0.0f,  0.0f }, // 0 - BL
-			{  skyboxDim, -skyboxDim, -skyboxDim,   0.0f,  1.0f }, // 1 - BR
-			{ -skyboxDim, -skyboxDim,  skyboxDim,   1.0f,  0.0f }, // 2 - TL
-			{  skyboxDim, -skyboxDim,  skyboxDim,   1.0f,  1.0f }  // 3 - TR
-		},
-
-		{ // top
-			{ -skyboxDim,  skyboxDim, -skyboxDim,  -1.0f,  1.0f }, // 0 - BL
-			{  skyboxDim,  skyboxDim, -skyboxDim,  -1.0f,  0.0f }, // 1 - BR
-			{ -skyboxDim,  skyboxDim,  skyboxDim,   0.0f,  1.0f }, // 2 - TL
-			{  skyboxDim,  skyboxDim,  skyboxDim,   0.0f,  0.0f }  // 3 - TR
-		}
+	VertexTextured skyboxVertices[36] = {
+	{-skyboxDim,-skyboxDim,-skyboxDim, 0.5, 2.0/3 },//12 - left
+    {-skyboxDim,-skyboxDim, skyboxDim, 0.25, 2.0/3 },//12 - left
+    {-skyboxDim, skyboxDim, skyboxDim, 0.25, 1.0/3 },//12 - left
+    {skyboxDim, skyboxDim,-skyboxDim , 0.75, 1.0/3 },//11 - front
+    {-skyboxDim,-skyboxDim,-skyboxDim, 0.5, 2.0/3 },//11 - front
+    {-skyboxDim, skyboxDim,-skyboxDim, 0.5, 1.0/3 },//11 - front
+    {skyboxDim,-skyboxDim, skyboxDim , 0.25, 1.0 },//10 - bottom
+    {-skyboxDim,-skyboxDim,-skyboxDim, 0.5, 2.0/3 },//10 - bottom
+    {skyboxDim,-skyboxDim,-skyboxDim , 0.5, 1.0 },//10 - bottom
+    {skyboxDim, skyboxDim,-skyboxDim , 0.75, 1.0/3 },//9 - front
+    {skyboxDim,-skyboxDim,-skyboxDim , 0.75, 2.0/3 },//9 - front
+    {-skyboxDim,-skyboxDim,-skyboxDim, 0.5, 2.0/3 },//9 - front
+    {-skyboxDim,-skyboxDim,-skyboxDim, 0.5, 2.0/3 },//8 - left
+    {-skyboxDim, skyboxDim, skyboxDim, 0.25, 1.0/3 },//8 - left
+    {-skyboxDim, skyboxDim,-skyboxDim, 0.5, 1.0/3 },//8 - left
+    {skyboxDim,-skyboxDim, skyboxDim , 0.25, 1.0 },//7 - bottom
+    {-skyboxDim,-skyboxDim, skyboxDim, 0.25, 2.0/3 },//7 - bottom
+    {-skyboxDim,-skyboxDim,-skyboxDim, 0.5, 2.0/3 },//7 - bottom
+    {-skyboxDim, skyboxDim, skyboxDim, 0.25, 1.0/3 },//6 - back
+    {-skyboxDim,-skyboxDim, skyboxDim, 0.25, 2.0/3 },//6 - back
+    {skyboxDim,-skyboxDim, skyboxDim , 0, 2.0/3 },//6 - back
+    {skyboxDim, skyboxDim, skyboxDim , 1.0, 1.0/3 },//5 - right
+    {skyboxDim,-skyboxDim,-skyboxDim , 0.75, 2.0/3 },//5 - right
+    {skyboxDim, skyboxDim,-skyboxDim , 0.75, 1.0/3 },//5 - right
+    {skyboxDim,-skyboxDim,-skyboxDim , 0.75, 2.0/3 },//4 - right
+    {skyboxDim, skyboxDim, skyboxDim , 1.0, 1.0/3 },//4 - right
+    {skyboxDim,-skyboxDim, skyboxDim , 1.0, 2.0/3 },//4 - right
+    {skyboxDim, skyboxDim, skyboxDim , 0.25, 0},//3 - top`
+    {skyboxDim, skyboxDim,-skyboxDim , 0.5, 0 },//3 - top`
+    {-skyboxDim, skyboxDim,-skyboxDim, 0.5, 1.0/3 },//3 - top`
+    {skyboxDim, skyboxDim, skyboxDim , 0.25, 0 },//2 - top`
+    {-skyboxDim, skyboxDim,-skyboxDim, 0.5, 1.0/3 },//2 - top`
+    {-skyboxDim, skyboxDim, skyboxDim, 0.25, 1.0/3 },//2 - top`
+    {skyboxDim, skyboxDim, skyboxDim , 0, 1.0/3 },//1 - back
+    {-skyboxDim, skyboxDim, skyboxDim, 0.25, 1.0/3 },//1 - back 
+    {skyboxDim,-skyboxDim, skyboxDim , 0, 2.0/3 } //1 - back
 	};
 
-	glGenVertexArrays( 6, skyboxVAOds );
+	// create the index array
+	unsigned short skyboxIndicies[36];
+	for (int i = 0; i < 36; i++)
+		skyboxIndicies[i] = i;
 
-	for( int i = 0; i < 6; i++ ) {
-		glBindVertexArray( skyboxVAOds[i] );
-		glGenBuffers(2, vbods);
-		glBindBuffer( GL_ARRAY_BUFFER, vbods[0] );
-		glBufferData( GL_ARRAY_BUFFER, sizeof(skyboxVertices[i]), skyboxVertices[i], GL_STATIC_DRAW );
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, vbods[1] );
-		glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), skyboxIndices, GL_STATIC_DRAW );
-		glEnableVertexAttribArray( attrib_vPos_loc );
-		glVertexAttribPointer( attrib_vPos_loc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTextured), (void*) 0 );
-		glEnableVertexAttribArray( attrib_vTextureCoord_loc );
-		glVertexAttribPointer( attrib_vTextureCoord_loc, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTextured), (void*) (sizeof(float) * 3) );
-	}
+	// generate and bind the VAO
+	glGenVertexArrays(1, &skyboxVAO);
+	glBindVertexArray(skyboxVAO);
+	// generate and bind the array VBO
+	GLuint arrayHandle;
+	glGenBuffers(1, &arrayHandle);
+	glBindBuffer(GL_ARRAY_BUFFER, arrayHandle);
+	
+	// send the vertex data to the GPU
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+
+	// state where the vertex position is located within our array data
+	glEnableVertexAttribArray(attrib_vPos_loc);
+	glVertexAttribPointer(attrib_vPos_loc, 
+						  3,
+						  GL_FLOAT,
+						  GL_FALSE,
+						  sizeof(VertexTextured),
+						  (void*)0);
+
+	// state where the texture coordinate is located within our array data
+	glEnableVertexAttribArray( attrib_vTextureCoord_loc);
+	glVertexAttribPointer(  attrib_vTextureCoord_loc,
+							2,
+							GL_FLOAT,
+							GL_FALSE,
+							sizeof(VertexTextured),
+							(void*)(sizeof(float) * 3));
+
+	// TODO #07: generate and bind the element array VBO.  send data to the GPU
+	GLuint indexHandle;
+	glGenBuffers(1, &indexHandle);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexHandle);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndicies), skyboxIndicies, GL_STATIC_DRAW);
+
 
 	//////////////////////////////////////////
 	//
@@ -636,11 +651,10 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glm::vec3 white(1,1,1);
 	glUniform3fv( uniform_color_loc, 1, &white[0] );
 
-	for( unsigned int i = 0; i < 6; i++ ) {
-		glBindTexture( GL_TEXTURE_2D, skyboxHandles[i] );
-		glBindVertexArray( skyboxVAOds[i] );
-		glDrawElements( GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (void*)0 );
-	}
+	//draw the skybox
+  	glBindVertexArray(skyboxVAO);
+	glBindTexture(GL_TEXTURE_2D, skyboxTextureHandle);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, (void*)0);
 
 	// draw the platform
 	glBindTexture( GL_TEXTURE_2D, platformTextureHandle );
@@ -648,7 +662,7 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glDrawElements( GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (void*)0 );
 
 	// draw the player
-	//playerTank->setScale(glm::vec3(1.0,1.5,1.0));
+	playerTank->setScale(glm::vec3(2.0,2.0,2.0));
 	m = playerTank->getModelMatrix();
 
 	glm::mat4 mv = viewMatrix * m;
@@ -702,7 +716,7 @@ int main( int argc, char *argv[] ) {
 		// query what the actual size of the window we are rendering to is.
 
 		
-
+		convertSphericalToCartesian();
 		glfwGetFramebufferSize( window, &windowWidth, &windowHeight );
 		
 		/////////////////////////////

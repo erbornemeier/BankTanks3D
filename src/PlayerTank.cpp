@@ -4,26 +4,26 @@ PlayerTank::PlayerTank(CSCI441::ModelLoader* tankBase, glm::vec3 pos, glm::vec3 
 	this->model = tankBase;
 
 	this->position = pos;
-	this->rotation = rot;
+	this->baseRotation = rot;
 	this->scale = scl;
 }
 
 void PlayerTank::moveForward(float tstep){
-	position.z += SPEED * tstep * cos(rotation.y);
-	position.x += SPEED * tstep * sin(rotation.y);
+	position.z += SPEED * tstep * cos(baseRotation.y);
+	position.x += SPEED * tstep * sin(baseRotation.y);
 }
 
 void PlayerTank::moveBackward(float tstep){
-	position.z -= SPEED * tstep * cos(rotation.y);
-	position.x -= SPEED * tstep * sin(rotation.y);
+	position.z -= SPEED * tstep * cos(baseRotation.y);
+	position.x -= SPEED * tstep * sin(baseRotation.y);
 }
 
 void PlayerTank::rotateRight(float tstep){
-	rotation.y += ROT_SPEED * tstep;
+	baseRotation.y -= ROT_SPEED * tstep;
 }
 
 void PlayerTank::rotateLeft(float tstep){
-	rotation.y -= ROT_SPEED * tstep;
+	baseRotation.y += ROT_SPEED * tstep;
 }
 
 void PlayerTank::setScale(glm::vec3 scale){
@@ -40,7 +40,7 @@ glm::mat4 PlayerTank::getModelMatrix(){
 	glm::mat4 m;
 	m = glm::scale(m, scale);
 	m = glm::translate(m, position);
-	m = glm::rotate(m, rotation.y, glm::vec3(0,1,0));
+	m = glm::rotate(m, baseRotation.y, glm::vec3(0,1,0));
 	return m;
 }
 
@@ -48,6 +48,6 @@ glm::vec3 PlayerTank::getPosition(){
 	return position;
 }
 
-glm::vec3 PlayerTank::getRotation(){
-	return rotation;
+glm::vec3 PlayerTank::getBaseRotation(){
+	return baseRotation;
 }

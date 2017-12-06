@@ -4,9 +4,6 @@ TODO:
 	[X] Accept smooth movement based on timestep so there is smooth 	movement through various framerates
 	--Completed by Easton
 
-*	[ ] Create model loader class to store positional information
-		and to have draw functionality abstracted from main
-
 	[ ] Create player and enemy tank classes to deal with shooting,
 		storing the box colliders, and particle systems
 
