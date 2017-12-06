@@ -1,5 +1,6 @@
 # Blender v2.79 (sub 0) OBJ File: 'T34.blend'
 # www.blender.org
+mtllib TankBase.mtl
 o Track_Left_Object_1
 v 1.221006 0.568461 3.218739
 v 1.230091 0.619252 3.069541
