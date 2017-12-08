@@ -27,7 +27,6 @@
 #include <stdio.h>				// for printf functionality
 #include <stdlib.h>				// for exit functionality
 
-#include <vector>				// for vector
 
 #include <CSCI441/FramebufferUtils3.hpp>
 #include <CSCI441/objects3.hpp>
@@ -36,9 +35,13 @@
 #include <cstdlib>
 #include <time.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
 using namespace std;
 
 #include "PlayerTank.h"
+#include "Level.h"
 
 
 //******************************************************************************
@@ -57,45 +60,57 @@ bool moveUp = false;
 bool moveDown = false;
 glm::vec2 mousePosition( -9999.0f, -9999.0f );
 
+//camera paramters
 glm::vec3 cameraAngles( 1.82f, 2.01f, 35.0f ); //arcball (theta, phi, radius)
 glm::vec3 cameraOffset; 					   //camera offset from player
 glm::vec3 upVector( 0.0f,  1.0f,  0.0f );
 
-//TODO: move to separate class
-PlayerTank* playerTank;
-glm::vec3 tankPos(0.0f,0.0f,0.0f);
-float tankRot = 0.0f;
-float tank_speed = 5.f;
-CSCI441::ModelLoader* tankBaseModel = NULL,
-					* tankTurretModel = NULL;
-
+//platform
 GLuint platformVAOd;
 GLuint platformTextureHandle;
-float platformSize;
+float platformSize = 200;
 
-GLuint skyboxVAO;				   // all of our skybox VAOs
-GLuint skyboxTextureHandle;               // all of our skybox handles
+//skybox
+GLuint skyboxVAO;	   
+GLuint skyboxTextureHandle;
+GLfloat skyboxDim = 1000.0f;
 
+
+//SHADERS
+//texture shader - skybox and levels
 CSCI441::ShaderProgram* textureShaderProgram = NULL;
 GLint uniform_modelMtx_loc, uniform_viewProjetionMtx_loc, uniform_tex_loc, uniform_color_loc;
 GLint attrib_vPos_loc, attrib_vTextureCoord_loc;
 
+//model shader - game objects
 CSCI441::ShaderProgram* modelPhongShaderProgram = NULL;
 GLint uniform_phong_mv_loc, uniform_phong_v_loc, uniform_phong_p_loc, uniform_phong_norm_loc;
 GLint uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_ma_loc, uniform_phong_s_loc;
 GLint uniform_phong_txtr_loc;
 GLint attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc;
 
+//post processing shader - passthrough effects
 CSCI441::ShaderProgram* postprocessingShaderProgram = NULL;
 GLint uniform_post_proj_loc, uniform_post_fbo_loc;
 GLint attrib_post_vpos_loc, attrib_post_vtex_loc;
 
+//framebuffer
 GLuint fbo;
 int framebufferWidth = 1920, framebufferHeight = 1080;
 GLuint framebufferTextureHandle;
 GLuint rbo;
-
 GLuint texturedQuadVAO;
+
+//levels
+const uint NUM_LEVELS = 10;
+uint currentLevel = 0;
+vector<Level> levels;
+glm::vec3 levelCenteringOffset;
+
+//entities
+PlayerTank* playerTank;
+CSCI441::ModelLoader *tankBaseModel = NULL,
+					 *tankTurretModel = NULL;
 
 //******************************************************************************
 //
@@ -169,6 +184,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			case 'Q':
 				glfwSetWindowShouldClose(window, GLFW_TRUE);
 				break;
+			case 'N':
+				currentLevel = ++currentLevel%NUM_LEVELS;
 		}
 	}
 	else if (action == GLFW_RELEASE){
@@ -419,8 +436,6 @@ void setupBuffers() {
 	//
 	// PLATFORM
 
-	platformSize = 100.0f;
-
 	VertexTextured platformVertices[4] = {
 			{ -platformSize, 0.0f, -platformSize,   0.0f,  0.0f }, // 0 - BL
 			{  platformSize, 0.0f, -platformSize,   1.0f,  0.0f }, // 1 - BR
@@ -454,7 +469,6 @@ void setupBuffers() {
 
 
 	// create our skybox vertex array
-	GLfloat skyboxDim = 100.0f;
 	VertexTextured skyboxVertices[36] = {
 	{-skyboxDim,-skyboxDim,-skyboxDim, 0.5, 2.0/3 },//12 - left
     {-skyboxDim,-skyboxDim, skyboxDim, 0.25, 2.0/3 },//12 - left
@@ -566,6 +580,12 @@ void setupBuffers() {
 	glVertexAttribPointer(attrib_post_vtex_loc, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTextured), (void*) (sizeof(float) * 3));
 }
 
+// setupFramebuffer() //////////////////////////////////////////////////////////
+//
+//      Create and setup our framebuffer object for the two-pass rendering
+//
+////////////////////////////////////////////////////////////////////////////////
+
 void setupFramebuffer() {
 	// TODO #1 - Setup everything with the framebufferuffer
 	//create and bind the frame buffer object
@@ -612,6 +632,38 @@ void setupFramebuffer() {
 	CSCI441::FramebufferUtils::printFramebufferStatusMessage(GL_FRAMEBUFFER);
 	CSCI441::FramebufferUtils::printFramebufferInfo( GL_FRAMEBUFFER, fbo );
 	
+}
+// setupLevels() //////////////////////////////////////////////////////////
+//
+//      Loads in NUM_LEVELS number of levels that are LEVEL_SIZE x LEVEL_SIZE text files
+//		
+//		LEGEND
+//	    -----------------
+//		P - player
+//		E - enemy roamer
+//		S - enemy sentry
+//		b - wall block
+//
+////////////////////////////////////////////////////////////////////////////////
+void setupLevels(){
+
+	for (uint n = 0; n < NUM_LEVELS; n++){
+		string levelFilePath = "levels/Level" + to_string(n+1) + ".txt";
+		ifstream levelFile;
+		levelFile.open(levelFilePath);
+		if (levelFile.fail()){
+			cerr << "LEVEL FILE: " << levelFilePath << " COULD NOT BE OPENED, ABORTING" << endl;
+			exit(EXIT_FAILURE);
+		}
+		Level newLevel = Level(levelFile);
+		levels.push_back(newLevel);
+	}
+
+	levelCenteringOffset =  glm::vec3( -(Level::LEVEL_DIM_X * Level::BLOCK_DIM / 2.0f),
+								        Level::BLOCK_DIM / 2.0f - 0.1f,
+								       -(Level::LEVEL_DIM_Z * Level::BLOCK_DIM / 2.0f));
+
+	cout << levelCenteringOffset.x << " " << levelCenteringOffset.y << " " << levelCenteringOffset.z << endl;
 }
 
 //******************************************************************************
@@ -664,6 +716,14 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glBindTexture( GL_TEXTURE_2D, platformTextureHandle );
 	glBindVertexArray( platformVAOd );
 	glDrawElements( GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (void*)0 );
+
+	//draw the current level
+	for (glm::vec3& blockPos: levels[currentLevel].getBlockPos()){
+		m = glm::translate(glm::mat4(), blockPos  + levelCenteringOffset);
+		glUniformMatrix4fv(uniform_modelMtx_loc, 1, GL_FALSE, &m[0][0]);
+		CSCI441::drawSolidCube(Level::BLOCK_DIM);
+	}
+
 
 	// draw the player base
 	playerTank->setScale(glm::vec3(2.0,2.0,2.0));
@@ -722,6 +782,7 @@ int main( int argc, char *argv[] ) {
 	setupBuffers();									// load all our VAOs and VBOs into memory
 	setupTextures();								// load all textures into memory
 	setupFramebuffer();								// setup our framebuffer
+	setupLevels();
 	convertSphericalToCartesian();
 
 	CSCI441::setVertexAttributeLocations( attrib_vPos_loc, -1, attrib_vTextureCoord_loc );
@@ -755,7 +816,7 @@ int main( int argc, char *argv[] ) {
 		// set the projection matrix based on the window size
 		// use a perspective projection that ranges
 		// with a FOV of 45 degrees, for our current aspect ratio, and Z ranges from [0.001, 1000].
-		glm::mat4 projectionMatrix = glm::perspective( 45.0f, framebufferWidth / (float) framebufferHeight, 0.001f, 300.0f );
+		glm::mat4 projectionMatrix = glm::perspective( 45.0f, framebufferWidth / (float) framebufferHeight, 0.001f, 2000.0f );
 
 		// set up our look at matrix to position our camera
 		glm::mat4 viewMatrix = glm::lookAt( cameraOffset + playerTank->getPosition(), playerTank->getPosition(), upVector );
