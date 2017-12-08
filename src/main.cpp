@@ -27,7 +27,7 @@
 #include <stdio.h>				// for printf functionality
 #include <stdlib.h>				// for exit functionality
 
-#include <vector>					// for vector
+#include <vector>				// for vector
 
 #include <CSCI441/FramebufferUtils3.hpp>
 #include <CSCI441/objects3.hpp>
@@ -408,13 +408,13 @@ void setupBuffers() {
 	//////////////////////////////////////////
 	//
 	// Model
-
 	tankBaseModel = new CSCI441::ModelLoader();
-	tankBaseModel->loadModelFile( "models/tank/T34.obj" );
+	tankBaseModel->loadModelFile( "models/tank/TankBase.obj" );
 	tankTurretModel = new CSCI441::ModelLoader();
-	tankTurretModel->loadModelFile( "models/tank/T34.obj" );
+	tankTurretModel->loadModelFile( "models/tank/TankTurret.obj" );
 
 	playerTank = new PlayerTank(tankBaseModel, tankTurretModel);
+
 	//////////////////////////////////////////
 	//
 	// PLATFORM
@@ -685,7 +685,6 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 					  GL_TEXTURE0);
 
 	// draw the player turret
-	playerTank->setScale(glm::vec3(1.0,1.0,1.0));
 	m = playerTank->getTurretModelMatrix();
 
 	mv = viewMatrix * m;
@@ -799,6 +798,9 @@ int main( int argc, char *argv[] ) {
 		glfwPollEvents();				// check for any events and signal to redraw screen
 		
 	}
+
+	delete tankBaseModel;
+	delete tankTurretModel;
 
 	glfwDestroyWindow( window );// clean up and close our window
 	glfwTerminate();						// shut down GLFW to clean up our context

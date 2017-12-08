@@ -36,6 +36,7 @@ public:
 
 	glm::vec3 getPosition();
 	glm::vec3 getBaseRotation();
+	
 	glm::mat4 getModelMatrix();
 	glm::mat4 getTurretModelMatrix();
 
@@ -48,8 +49,8 @@ private:
 	glm::mat4 modelMatrix;
 
 	//storage location for the drawable model
-	CSCI441::ModelLoader* base = NULL,
-						* turret =NULL;
+	CSCI441::ModelLoader *base   = NULL,
+						 *turret = NULL;
 
 	const float SPEED = 5.0f, ROT_SPEED = 2.5f;
 };  		
