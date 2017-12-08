@@ -1,19 +1,51 @@
 TODO:
 (Next = *)
 	
-	[X] Accept smooth movement based on timestep so there is smooth 	movement through various framerates
-	--Completed by Easton
+	---EASTON---
 
-	[ ] Create player and enemy tank classes to deal with shooting,
+	[X] Accept smooth movement based on timestep so there is smooth movement through various framerates
+
+	[X] Load in text file level config and place cubes in world where the text file specifies to create walls
+
+		[X] Create Level class to store information about levels
+
+		[X] Create setup levels function to center level around origin
+
+		[X] Render blocks
+
+	*[ ] Create Enemy tank classes to deal with movement,
 		storing the box colliders, and particle systems
 
-	[ ] Fix tank model lighting/ add texture to tank model
-			-using a purely red image for now to test
+		[ ] Sentry tank
 
-	[ ] Load in text file level config and place cubes in world where
-		the text file specifies to create walls
+		[ ] Roaming tank
 
-	[ ] Add ability to rotate top turret towards the mouse 
+	[ ] Make the enemy AI have the ability to "see" the player through raytracing concepts
 
-	[ ] Add particle system spawning underneath the tank that fades out slowly over time to simulate the treads depressing the surface
 
+	---SUMNER---
+
+	*[ ] Fix tank model lighting and add texture to tank model(just different colors for each tank)
+		
+		[ ] Player tank texture
+
+		[ ] Sentry tank texture
+
+		[ ] Roaming tank texture
+		
+
+	[ ] Add particle system spawning underneath the tank that fades out slowly over time to simulate the treads 	depressing the surface
+
+	[ ] Make the walls taller, which requires slightly altering the CSCI441::drawSolidCube() method from the 		objects3.hpp class. 
+
+	---ERIC---
+
+	[ ] Give the player tank the ability to spawn a bullet with a mouse press. The bullet should match the 			heading associated to the turret and travel off at a constant speed according to the timestep value
+
+	*[ ] Make the camera follow the player tank around at a reasonable height looking straight down at a bird's 		eye view of the tank
+
+			-Easton is tired and can't figure out why this seemingly easy task won't work, so it's probably just a small bug at this point
+
+	*[ ] Adjust platform and skybox to a comfortable place such that 
+
+	[ ] Implement collision detection between the player bullets and the walls such that the bullets bounce on the first wall hit, and dissapear on the second (or nth) hit.
