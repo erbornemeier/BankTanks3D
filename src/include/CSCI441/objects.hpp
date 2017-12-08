@@ -576,11 +576,11 @@ inline void CSCI441_INTERNAL::drawSphere( GLdouble radius, GLint stacks, GLint s
 					double theta = sliceStep * sliceNum;
 
 					glNormal3f( -cos( theta )*sin( phi ),            -cos( phi ),     sin( theta )*sin( phi )            );
-					glTexCoord2f( stackNum / sphereData.st,     sliceNum / sphereData.sl );
+					//glTexCoord2f( stackNum / sphereData.st,     sliceNum / sphereData.sl );
 					glVertex3f( -cos( theta )*sin( phi )*radius,     -cos( phi )*radius,     sin( theta )*sin( phi )*radius     );
 
 					glNormal3f( -cos( theta )*sin( phiNext ),        -cos( phiNext ), sin( theta )*sin( phiNext )        );
-					glTexCoord2f( (stackNum+1) / sphereData.st, sliceNum / sphereData.sl );
+					//glTexCoord2f( (stackNum+1) / sphereData.st, sliceNum / sphereData.sl );
 					glVertex3f( -cos( theta )*sin( phiNext )*radius, -cos( phiNext )*radius, sin( theta )*sin( phiNext )*radius );
 				}
 			}; glEnd();

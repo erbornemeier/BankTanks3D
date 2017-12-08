@@ -3,7 +3,7 @@
 	* @author Dr. Jeffrey Paone
 	* @date Last Edit: 26 Oct 2017
 	* @version 1.3
-	*
+	* 
 	* @copyright MIT License Copyright (c) 2017 Dr. Jeffrey Paone
 	*
 	*	These functions draw solid (or wireframe) 3D closed OpenGL
