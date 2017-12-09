@@ -11,6 +11,6 @@ bbbbbbbbbbbbbbbb               b
 b              b               b
 b                              b
 b                      b       b
-b  0                   b   S   b
+b  P                   b   S   b
 b              b       b       b
 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb

@@ -22,7 +22,7 @@
 ########################################
 
 TARGET = bank_tanks
-OBJECTS = main.o PlayerTank.o Level.o
+OBJECTS = main.o PlayerTank.o EnemyRoamerTank.o Level.o
 
 LOCAL_INC_PATH = /usr/local/include/
 LOCAL_LIB_PATH = /usr/local/lib/

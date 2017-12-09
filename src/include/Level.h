@@ -13,20 +13,26 @@ class Level{
 
 	public:
 
+		//constructors
 		Level(ifstream& file);
 
+		//getters
+		glm::vec3& getPlayerPos();
+		vector<glm::vec3>& getEnemyRoamerPos();
+		vector<glm::vec3>& getEnemySentryPos();
 		vector<glm::vec3>& getBlockPos();
 
-		const static uint BLOCK_DIM = 8;
+		//constants
+		const static uint BLOCK_DIM = 5;
 		const static uint LEVEL_DIM_X = 32;
 		const static uint LEVEL_DIM_Z = 16;
 
 	private:
 
+		//level attributes
 		glm::vec3 playerPos;
 		vector<glm::vec3> enemyRoamerPos;
 		vector<glm::vec3> enemySentryPos;
-
 		vector<glm::vec3> blocks;
 
 };

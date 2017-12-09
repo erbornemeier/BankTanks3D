@@ -22,12 +22,12 @@ void PlayerTank::moveBackward(float tstep){
 
 void PlayerTank::rotateRight(float tstep){
 	baseRotation.y -= ROT_SPEED * tstep;
-	turretRotation.y -= 2*ROT_SPEED * tstep;
+	turretRotation.y -= ROT_SPEED * tstep;
 }
 
 void PlayerTank::rotateLeft(float tstep){
 	baseRotation.y += ROT_SPEED * tstep;
-	turretRotation.y += 2*ROT_SPEED * tstep;
+	turretRotation.y += ROT_SPEED * tstep;
 
 }
 
@@ -53,6 +53,10 @@ void PlayerTank::drawTurret(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc,
 		    GLint md_loc, GLint ms_loc, GLint s_loc, GLint ma_loc, GLint txtr){
 
 	turret->draw( vpos_loc, vnorm_loc, vtex_loc, md_loc, ms_loc, s_loc, ma_loc, txtr);
+}
+
+void PlayerTank::setPosition(glm::vec3 pos){
+	position = pos;
 }
 
 glm::mat4 PlayerTank::getModelMatrix(){
