@@ -1,11 +1,13 @@
+
+
 #include "Level.h"
 
 Level::Level(ifstream& file){
 	char temp;
 
 	cout << "LEVEL LOADING.........." << endl;
-	for (int i = 0; i < LEVEL_DIM_Z; i++) {
-		for (int j = 0; j < LEVEL_DIM_X + 2; j++) { //need to add 2 to accept endline chars
+	for (uint i = 0; i < LEVEL_DIM_Z; i++) {
+		for (uint j = 0; j < LEVEL_DIM_X + 2; j++) { //need to add 2 to accept endline chars
 			
 			temp = file.get();
 			cout << temp;
@@ -24,7 +26,7 @@ Level::Level(ifstream& file){
 					enemySentryPos.push_back( glm::vec3( (float)j*BLOCK_DIM, 0.0f, (float)i*BLOCK_DIM ));
 					break;
 
-				case 'b'://block
+				case 'b': //block
 					blocks.push_back( glm::vec3( (float)j*BLOCK_DIM, 0.0f, (float)i*BLOCK_DIM) );
 					break;
 
@@ -33,6 +35,19 @@ Level::Level(ifstream& file){
 
 	}
 	cout << endl << endl;
+}
+
+
+glm::vec3& Level::getPlayerPos(){
+	return playerPos;
+}
+
+vector<glm::vec3>& Level::getEnemyRoamerPos(){
+	return enemyRoamerPos;
+}
+
+vector<glm::vec3>& Level::getEnemySentryPos(){
+	return enemySentryPos;
 }
 
 vector<glm::vec3>& Level::getBlockPos(){

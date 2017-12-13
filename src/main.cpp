@@ -41,6 +41,7 @@
 using namespace std;
 
 #include "PlayerTank.h"
+#include "EnemyRoamerTank.h"
 #include "Level.h"
 
 
@@ -61,20 +62,19 @@ bool moveDown = false;
 glm::vec2 mousePosition( -9999.0f, -9999.0f );
 
 //camera paramters
-glm::vec3 cameraAngles( 1.82f, 2.01f, 35.0f ); //arcball (theta, phi, radius)
+glm::vec3 cameraAngles( 0.0f, M_PI, 110.0f ); //arcball (theta, phi, radius)
 glm::vec3 cameraOffset; 					   //camera offset from player
 glm::vec3 upVector( 0.0f,  1.0f,  0.0f );
 
 //platform
 GLuint platformVAOd;
 GLuint platformTextureHandle;
-float platformSize = 200;
+float platformSize = 200.f;
 
 //skybox
 GLuint skyboxVAO;	   
 GLuint skyboxTextureHandle;
 GLfloat skyboxDim = 1000.0f;
-
 
 //SHADERS
 //texture shader - skybox and levels
@@ -106,9 +106,14 @@ const uint NUM_LEVELS = 10;
 uint currentLevel = 0;
 vector<Level> levels;
 glm::vec3 levelCenteringOffset;
+void loadCurrentLevel();
 
 //entities
 PlayerTank* playerTank;
+vector<EnemyRoamerTank> enemyRoamers;
+//vector<EnemySentryTank*> enemySentrys; TODO
+
+//models
 CSCI441::ModelLoader *tankBaseModel = NULL,
 					 *tankTurretModel = NULL;
 
@@ -186,6 +191,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 				break;
 			case 'N':
 				currentLevel = ++currentLevel%NUM_LEVELS;
+				loadCurrentLevel();
+				break;
 		}
 	}
 	else if (action == GLFW_RELEASE){
@@ -237,7 +244,7 @@ static void cursor_callback(GLFWwindow* window, double xpos, double ypos) {
 	// make sure movement is in bounds of the window
 	// glfw captures mouse movement on entire screen
 
-	if( xpos > 0 && xpos < windowWidth ) {
+	/*if( xpos > 0 && xpos < windowWidth ) {
 		if( ypos > 0 && ypos < windowHeight ) {
 			// active motion
 			if( leftMouseDown ) {
@@ -268,7 +275,7 @@ static void cursor_callback(GLFWwindow* window, double xpos, double ypos) {
 
 			}
 		}
-	}
+	}*/
 }
 
 //******************************************************************************
@@ -659,17 +666,35 @@ void setupLevels(){
 		levels.push_back(newLevel);
 	}
 
-	levelCenteringOffset =  glm::vec3( -(Level::LEVEL_DIM_X * Level::BLOCK_DIM / 2.0f),
-								        Level::BLOCK_DIM / 2.0f - 0.1f,
-								       -(Level::LEVEL_DIM_Z * Level::BLOCK_DIM / 2.0f));
+	//levelCenteringOffset =  glm::vec3( -(Level::LEVEL_DIM_X * Level::BLOCK_DIM / 2.0f),
+	//							        Level::BLOCK_DIM / 2.0f - 0.1f,
+	//							       -(Level::LEVEL_DIM_Z * Level::BLOCK_DIM / 2.0f));
 
-	cout << levelCenteringOffset.x << " " << levelCenteringOffset.y << " " << levelCenteringOffset.z << endl;
 }
 
 //******************************************************************************
 //
 // Game Controller functions - this is where we move and control game objects
 
+void loadCurrentLevel(){
+	//clear the current enemy vectors
+	enemyRoamers.clear();
+	//enemySentries.clear(); TODO
+
+	//reset player position
+	playerTank->setPosition(levels[currentLevel].getPlayerPos());
+
+	//create new enemies and set positions
+	for (glm::vec3& eRPos: levels[currentLevel].getEnemyRoamerPos()){
+		EnemyRoamerTank newRoamer(tankBaseModel, tankTurretModel, eRPos);
+		enemyRoamers.push_back(newRoamer);
+		cout << eRPos.x << " " << eRPos.y << " " << eRPos.z << " " << endl;
+	}
+	/*for (glm::vec3& eSPos: levels[currentLevel].getEnemySentryPos()){
+		EnemyRoamerTank newSentry(tankBaseModel, tankTurretModel, eRPos);
+		enemySentrys.push_back(newSentry);
+	} TODO */
+}
 
 void moveHero(float tstep){
 	//movement from key presses
@@ -697,13 +722,10 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glm::mat4 m, vp = projectionMatrix * viewMatrix;
 
 	// draw the skybox
-	// Use our texture shader program
 	textureShaderProgram->useProgram();
-
 	glUniformMatrix4fv(uniform_modelMtx_loc, 1, GL_FALSE, &m[0][0]);
 	glUniformMatrix4fv(uniform_viewProjetionMtx_loc, 1, GL_FALSE, &vp[0][0]);
 	glUniform1ui(uniform_tex_loc, GL_TEXTURE0);
-
 	glm::vec3 white(1,1,1);
 	glUniform3fv( uniform_color_loc, 1, &white[0] );
 
@@ -725,42 +747,54 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	}
 
 
-	// draw the player base
-	playerTank->setScale(glm::vec3(2.0,2.0,2.0));
-	m = playerTank->getModelMatrix();
-
-	glm::mat4 mv = viewMatrix * m;
-	glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
-
-	// use our textured phong shader program for the model
+	//DRAW ENTITIES
 	modelPhongShaderProgram->useProgram();
-	glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
 	glUniformMatrix4fv( uniform_phong_v_loc, 1, GL_FALSE, &viewMatrix[0][0] );
 	glUniformMatrix4fv( uniform_phong_p_loc, 1, GL_FALSE, &projectionMatrix[0][0] );
-	glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
 	glUniform1i( uniform_phong_txtr_loc, 0 );
 
+	// draw the player
+	m = playerTank->getModelMatrix();
+	glm::mat4 mv = viewMatrix * m;
+	glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
+	glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
+	glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
 	playerTank->drawBase( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
 					  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
 					  GL_TEXTURE0);
-
-	// draw the player turret
 	m = playerTank->getTurretModelMatrix();
-
 	mv = viewMatrix * m;
 	nMtx = glm::transpose( glm::inverse( mv ) );
-
-	// use our textured phong shader program for the model
 	modelPhongShaderProgram->useProgram();
 	glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
-	glUniformMatrix4fv( uniform_phong_v_loc, 1, GL_FALSE, &viewMatrix[0][0] );
-	glUniformMatrix4fv( uniform_phong_p_loc, 1, GL_FALSE, &projectionMatrix[0][0] );
 	glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
-	glUniform1i( uniform_phong_txtr_loc, 0 );
-
 	playerTank->drawTurret( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
 					  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
 					  GL_TEXTURE0);
+
+	// draw the roamers
+	for (EnemyRoamerTank& er: enemyRoamers){
+		m = er.getModelMatrix();
+		glm::mat4 mv = viewMatrix * m;
+		glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
+		glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
+		glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
+		glUniform1i( uniform_phong_txtr_loc, 0 );
+		er.drawBase( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
+					  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
+					  GL_TEXTURE0);
+		m = er.getTurretModelMatrix();
+		mv = viewMatrix * m;
+		nMtx = glm::transpose( glm::inverse( mv ) );
+		modelPhongShaderProgram->useProgram();
+		glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
+		glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
+		er.drawTurret( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
+						  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
+						  GL_TEXTURE0);
+	}
+
+	//TODO draw the sentries
 
 }
 

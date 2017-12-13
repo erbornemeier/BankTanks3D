@@ -10,11 +10,11 @@
 
 #include <iostream>
 
-class PlayerTank{
+class EnemyRoamerTank{
 
 public:
 
-	PlayerTank(CSCI441::ModelLoader* tankBase,
+	EnemyRoamerTank(CSCI441::ModelLoader* tankBase,
 			   CSCI441::ModelLoader* tankTurret, 
 			   glm::vec3 pos = glm::vec3(0,0,0), 
 			   glm::vec3 rot = glm::vec3(0,0,0),
@@ -34,10 +34,9 @@ public:
 	void drawTurret(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc, 
 		      GLint md_loc, GLint ms_loc, GLint s_loc, GLint ma_loc, GLint txtr);
 
-	void setPosition(glm::vec3 pos);
-
 	glm::vec3 getPosition();
 	glm::vec3 getBaseRotation();
+	
 	glm::mat4 getModelMatrix();
 	glm::mat4 getTurretModelMatrix();
 
@@ -53,5 +52,5 @@ private:
 	CSCI441::ModelLoader *base   = NULL,
 						 *turret = NULL;
 
-	const float SPEED = 10.0f, ROT_SPEED = 3.0f;
+	const float SPEED = 5.0f, ROT_SPEED = 2.5f;
 };  		

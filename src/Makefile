@@ -22,7 +22,7 @@
 ########################################
 
 TARGET = bank_tanks
-OBJECTS = main.o PlayerTank.o Level.o
+OBJECTS = main.o PlayerTank.o EnemyRoamerTank.o Level.o
 
 LOCAL_INC_PATH = /usr/local/include/
 LOCAL_LIB_PATH = /usr/local/lib/
@@ -82,7 +82,7 @@ ifeq ($(OS), Windows_NT)
 # Mac builds
 else 
 	ifeq ($(shell uname), Darwin)
-		LIBS += -framework OpenGL -lglfw3 -framework Cocoa -framework IOKit -framework CoreVideo
+		LIBS += -framework OpenGL -lglfw -framework Cocoa -framework IOKit -framework CoreVideo
 
 	# Linux and all other builds
 	else

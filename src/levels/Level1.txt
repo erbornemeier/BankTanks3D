@@ -5,7 +5,7 @@ b                              b
 b         b                    b
 bbbbbb    b     E              b
 b         b                    b
-b 0       bbbbbbbbbbbb    bbbbbb
+b P       bbbbbbbbbbbb    bbbbbb
 b              b               b
 b              b               b
 bbb    bbbbbbbbb               b

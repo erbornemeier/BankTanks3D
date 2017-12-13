@@ -42,10 +42,12 @@ TODO:
 
 	[ ] Give the player tank the ability to spawn a bullet with a mouse press. The bullet should match the 			heading associated to the turret and travel off at a constant speed according to the timestep value
 
-	*[ ] Make the camera follow the player tank around at a reasonable height looking straight down at a bird's 		eye view of the tank
+	*[x] Make the camera follow the player tank around at a reasonable height looking straight down at a bird's 		eye view of the tank
 
-			-Easton is tired and can't figure out why this seemingly easy task won't work, so it's probably just a small bug at this point
+			-Easton is tired and can't figure out why this seemingly easy task won't work, so it's probably just a small bug at this point 
+      - (it was... MV matrix was being scaled before translated, so translate values were all doubled)
 
 	*[ ] Adjust platform and skybox to a comfortable place such that 
+      - (not sure what this means)
 
 	[ ] Implement collision detection between the player bullets and the walls such that the bullets bounce on the first wall hit, and dissapear on the second (or nth) hit.
