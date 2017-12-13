@@ -20,6 +20,14 @@ TODO:
 
 		[ ] Roaming tank
 
+	[ ] Make the player collide with the walls
+
+		[X] Simple bounding box collision detection
+
+		[ ] Changing bounding box collision detection
+
+		[ ] (Optional) off axis collision detection with changing rotating bounding box
+
 	[ ] Make the enemy AI have the ability to "see" the player through raytracing concepts
 
 
@@ -36,7 +44,8 @@ TODO:
 
 	[ ] Add particle system spawning underneath the tank that fades out slowly over time to simulate the treads 	depressing the surface
 
-	[ ] Make the walls taller, which requires slightly altering the CSCI441::drawSolidCube() method from the 		objects3.hpp class. 
+	[X] Make the walls taller, which requires slightly altering the CSCI441::drawSolidCube() method from the 		objects3.hpp class. 
+		-Marking this as unneccesary. I think the walls actually look fine as they are especially after altering the camera angle to give a nicer feel.
 
 	---ERIC---
 
