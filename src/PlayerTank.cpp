@@ -61,17 +61,17 @@ void PlayerTank::setPosition(glm::vec3 pos){
 
 glm::mat4 PlayerTank::getModelMatrix(){
 	glm::mat4 m;
-	m = glm::scale(m, scale);
 	m = glm::translate(m, position);
 	m = glm::rotate(m, baseRotation.y, glm::vec3(0,1,0));
+	m = glm::scale(m, scale);
 	return m;
 }
 
 glm::mat4 PlayerTank::getTurretModelMatrix(){
 	glm::mat4 m;
-	m = glm::scale(m, scale);
 	m = glm::translate(m, position + glm::vec3(0,0.1,0));
 	m = glm::rotate(m, turretRotation.y, glm::vec3(0,1,0));
+	m = glm::scale(m, scale);
 	return m;
 }
 

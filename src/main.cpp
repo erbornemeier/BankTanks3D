@@ -62,7 +62,7 @@ bool moveDown = false;
 glm::vec2 mousePosition( -9999.0f, -9999.0f );
 
 //camera paramters
-glm::vec3 cameraAngles( 1.82f, 2.01f, 35.0f ); //arcball (theta, phi, radius)
+glm::vec3 cameraAngles( 0.0f, M_PI, 110.0f ); //arcball (theta, phi, radius)
 glm::vec3 cameraOffset; 					   //camera offset from player
 glm::vec3 upVector( 0.0f,  1.0f,  0.0f );
 
@@ -244,7 +244,7 @@ static void cursor_callback(GLFWwindow* window, double xpos, double ypos) {
 	// make sure movement is in bounds of the window
 	// glfw captures mouse movement on entire screen
 
-	if( xpos > 0 && xpos < windowWidth ) {
+	/*if( xpos > 0 && xpos < windowWidth ) {
 		if( ypos > 0 && ypos < windowHeight ) {
 			// active motion
 			if( leftMouseDown ) {
@@ -275,7 +275,7 @@ static void cursor_callback(GLFWwindow* window, double xpos, double ypos) {
 
 			}
 		}
-	}
+	}*/
 }
 
 //******************************************************************************
