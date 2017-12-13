@@ -31,6 +31,32 @@ void EnemyRoamerTank::rotateLeft(float tstep){
 
 }
 
+void EnemyRoamerTank::makeMovement(float tstep){
+	bool playerInSight = canSeePlayer();
+
+	if (playerInSight){
+		//TODO go towards the player
+	}
+	else {
+		//TODO move randomly
+	}
+}
+
+bool EnemyRoamerTank::canSeePlayer(){
+	//TODO
+	return false;
+}
+
+bool EnemyRoamerTank::lineLineCollide(){
+	//TODO
+	return false;
+}
+
+bool EnemyRoamerTank::lineRectCollide(){
+	//TODO
+	return false;
+}
+
 void EnemyRoamerTank::rotateTurretRight(float tstep){
 	turretRotation.y -= ROT_SPEED * tstep;
 }

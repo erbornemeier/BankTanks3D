@@ -29,6 +29,9 @@ public:
 	void rotateTurretRight(float timeStep);
 	void setScale(glm::vec3 scale);
 
+	void makeMovement(float tstep);
+	
+
 	void drawBase(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc, 
 		      GLint md_loc, GLint ms_loc, GLint s_loc, GLint ma_loc, GLint txtr);
 	void drawTurret(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc, 
@@ -53,4 +56,9 @@ private:
 						 *turret = NULL;
 
 	const float SPEED = 5.0f, ROT_SPEED = 2.5f;
+
+	//enemy->player visibility check helper methods
+	bool canSeePlayer();
+	bool lineLineCollide();
+	bool lineRectCollide();
 };  		
