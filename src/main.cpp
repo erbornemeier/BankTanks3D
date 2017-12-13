@@ -688,6 +688,7 @@ void loadCurrentLevel(){
 	//create new enemies and set positions
 	for (glm::vec3& eRPos: levels[currentLevel].getEnemyRoamerPos()){
 		EnemyRoamerTank newRoamer(tankBaseModel, tankTurretModel, eRPos);
+		newRoamer.setBlockColliders(levels[currentLevel].getBlockPos(), Level::BLOCK_DIM);
 		enemyRoamers.push_back(newRoamer);
 	}
 	/*for (glm::vec3& eSPos: levels[currentLevel].getEnemySentryPos()){
@@ -706,6 +707,9 @@ void moveHero(float tstep){
 
 void updateScene(float tstep){
 	moveHero(tstep);
+	for (EnemyRoamerTank& er: enemyRoamers){
+		er.makeMovement(tstep, playerTank->getPosition());
+	}
 	convertSphericalToCartesian();
 }
 
