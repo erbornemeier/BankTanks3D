@@ -27,7 +27,7 @@ Level::Level(ifstream& file){
 					break;
 
 				case 'b': //block
-					blocks.push_back( glm::vec3( (float)j*BLOCK_DIM, 0.0f, (float)i*BLOCK_DIM) );
+					blocks.push_back( glm::vec3( (float)j*BLOCK_DIM, BLOCK_DIM / 2.0f, (float)i*BLOCK_DIM) );
 					break;
 
 			}
