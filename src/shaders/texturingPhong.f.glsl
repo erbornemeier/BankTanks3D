@@ -35,6 +35,4 @@ void main() {
 
     vec4 texel = texture( txtr, texCoord );
     fragColorOut *= texel;
-
-    fragColorOut = vec4(texCoord, 1, 1);
 }
