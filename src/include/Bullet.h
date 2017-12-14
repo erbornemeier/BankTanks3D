@@ -16,10 +16,10 @@ class Bullet{
 
 public:
 
-	Bullet(CSCI441::ModelLoader* tankBase,
+	Bullet(CSCI441::ModelLoader* base,
 			   glm::vec3 pos = glm::vec3(0,0,0),
-			   glm::vec3 dir = glm::vec3(1,1,1)
-         int maxBounces, float speed = 20.0f);
+			   glm::vec3 dir = glm::vec3(1,1,1),
+         int maxBounces = 1, float speed = 20.0f);
 	
 
 	void moveForward(float tstep);
@@ -50,7 +50,8 @@ private:
 	glm::mat4 modelMatrix;
 
 	//storage location for the drawable model
-	CSCI441::ModelLoader *base   = NULL,
+	CSCI441::ModelLoader *base   = NULL;
 
 	float speed;
+  int maxBounces;
 };  		
