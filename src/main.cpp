@@ -763,7 +763,7 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glUniform1i( uniform_phong_txtr_loc, 0 );
 
 	// draw the player
-    //glBindTexture(GL_TEXTURE_2D, redTextureHandle);
+        glBindTexture(GL_TEXTURE_2D, redTextureHandle);
 	m = playerTank->getModelMatrix();
 	glm::mat4 mv = viewMatrix * m;
 	glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
@@ -773,6 +773,7 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 					  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
 					  GL_TEXTURE0);
 
+        glBindTexture(GL_TEXTURE_2D, redTextureHandle);
 	m = playerTank->getTurretModelMatrix();
 	mv = viewMatrix * m;
 	nMtx = glm::transpose( glm::inverse( mv ) );
