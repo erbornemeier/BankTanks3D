@@ -776,7 +776,6 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	m = playerTank->getTurretModelMatrix();
 	mv = viewMatrix * m;
 	nMtx = glm::transpose( glm::inverse( mv ) );
-	modelPhongShaderProgram->useProgram();
 	glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
 	glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
 	playerTank->drawTurret( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
@@ -797,7 +796,6 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 		m = er.getTurretModelMatrix();
 		mv = viewMatrix * m;
 		nMtx = glm::transpose( glm::inverse( mv ) );
-		modelPhongShaderProgram->useProgram();
 		glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
 		glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
 		er.drawTurret( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
