@@ -86,7 +86,7 @@ else
 
 	# Linux and all other builds
 	else
-		LIBS += -lGL -lglfw3 -lX11 -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor -lpthread -ldl
+		LIBS += -lGL -lglfw -lX11 -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor -lpthread -ldl
 	endif
 endif
 

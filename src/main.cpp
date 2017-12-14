@@ -114,6 +114,7 @@ PlayerTank* playerTank;
 vector<EnemyRoamerTank> enemyRoamers;
 vector<Bullet> bullets;
 //vector<EnemySentryTank*> enemySentrys; TODO
+GLuint redTextureHandle, greenTextureHandle, brownTextureHandle;
 
 //models
 CSCI441::ModelLoader *tankBaseModel = NULL,
@@ -390,6 +391,10 @@ void setupTextures() {
   printf( "[INFO]: registering skybox...\n" );
   fflush( stdout );
   skyboxTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/desert.png"   );
+  redTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/red.png"   );
+  /* greenTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/green.png"   ); */
+  /* brownTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/brown.png"   ); */
+
   printf( "[INFO]: skybox textures read in and registered!\n\n" );
 }
 
@@ -774,6 +779,7 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glUniform1i( uniform_phong_txtr_loc, 0 );
 
 	// draw the player
+    //glBindTexture(GL_TEXTURE_2D, redTextureHandle);
 	m = playerTank->getModelMatrix();
 	glm::mat4 mv = viewMatrix * m;
 	glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
@@ -782,6 +788,7 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	playerTank->drawBase( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
 					  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
 					  GL_TEXTURE0);
+
 	m = playerTank->getTurretModelMatrix();
 	mv = viewMatrix * m;
 	nMtx = glm::transpose( glm::inverse( mv ) );
@@ -855,7 +862,9 @@ int main( int argc, char *argv[] ) {
 	convertSphericalToCartesian();
 
 	CSCI441::setVertexAttributeLocations( attrib_vPos_loc, -1, attrib_vTextureCoord_loc );
-	CSCI441::drawSolidSphere( 1, 16, 16 );	// strange hack I need to make spheres draw - don't have time to investigate why..it's a bug with my library
+	// strange hack I need to make spheres draw - don't have time to investigate why..
+	//it's a bug with my library
+	CSCI441::drawSolidSphere( 1, 16, 16 );
 	//  This is our draw loop - all rendering is done here.  We use a loop to keep the window open
 	//	until the user decides to close the window and quit the program.  Without a loop, the
 	//	window will display once and then the program exits.

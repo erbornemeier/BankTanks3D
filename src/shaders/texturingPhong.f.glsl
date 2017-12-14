@@ -21,20 +21,20 @@ void main() {
     vec3 lightVec2 = normalize(lightVec);
     vec3 normalVec2 = normalize(normalVec);
     vec3 halfwayVec2 = normalize(halfwayVec);
-    
+
     float sDotN = max( dot(lightVec2, normalVec2), 0.0 );
     vec4 diffuse = lightDiffuse * materialDiffuse * sDotN;
-    
+
     vec4 specular = vec4(0.0);
     if( sDotN > 0.0 )
         specular = lightSpecular * materialSpecular * pow( max( 0.0, dot( halfwayVec2, normalVec2 ) ), materialShininess );
-    
+
     vec4 ambient = lightAmbient * materialAmbient;
-    
+
     fragColorOut = diffuse + specular + ambient;
-    
+
     vec4 texel = texture( txtr, texCoord );
     fragColorOut *= texel;
 
-    fragColorOut = vec4(normalize(texCoord), 1, 1); //vec4(1,1,1,1);
+    fragColorOut = vec4(texCoord, 1, 1);
 }
