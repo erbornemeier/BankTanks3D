@@ -65,7 +65,12 @@ private:
 	CSCI441::ModelLoader *base   = NULL,
 						 *turret = NULL;
 
+
 	const float SPEED = 5.0f, ROT_SPEED = 2.5f;
+	float timeToChangeMove = 1.0f;
+	int randTranslateDir = 0,
+		randRotateDir    = 0;
+
 
 	//enemy->player visibility check helper methods
 	bool canSeePlayer();

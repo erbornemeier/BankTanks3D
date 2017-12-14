@@ -16,6 +16,7 @@ EnemyRoamerTank::EnemyRoamerTank(CSCI441::ModelLoader* tankBase, CSCI441::ModelL
 }
 
 void EnemyRoamerTank::moveForward(float tstep){
+
 	position.z += SPEED * tstep * cos(baseRotation.y);
 	if (isColliding())
 		position.z -= SPEED * tstep * cos(baseRotation.y);
@@ -63,7 +64,7 @@ bool EnemyRoamerTank::isColliding(){
 		if (glm::length(blockPos - position) > 2.0f * blockSize) continue;
 
 		//simple bounding box collision
-		//TODO instead of the tankWidth/Length replace with bounding box length and width
+		//TODO-EXTRA instead of the tankWidth/Length replace with bounding box length and width
 		if ((position.x + tankWidth/2.0f) >=  (blockPos.x - blockSize/2.0f) && 
 			(position.x - tankWidth/2.0f) <=  (blockPos.x + blockSize/2.0f) &&
 			(position.z + tankLength/2.0f) >= (blockPos.z - blockSize/2.0f) && 
@@ -81,13 +82,66 @@ void EnemyRoamerTank::makeMovement(float tstep, const glm::vec3& playerPos){
 	playerLoc = playerPos;
 	bool playerInSight = canSeePlayer();
 
+	//TRACK THE PLAYER
 	if (playerInSight){
-		//TODO go towards the player
-	}
-	else {
+		
+		glm::vec3 toPlayerVec = glm::normalize(playerLoc - position);
+		glm::vec3 enemyHeading = glm::vec3(sin(baseRotation.y), 0.f, cos(baseRotation.y));
+
+		//TODO-EXTRA make it rotate by a fraction rather than constant
+		if (glm::cross(toPlayerVec, enemyHeading).y <= 0)
+			rotateLeft(tstep);
+		else
+			rotateRight(tstep);
+
+		if (glm::length(playerLoc - position) > 10.0f){
+			moveForward(tstep);
+		}
+
+	//MOVE RANDOMLY
+	} else {
+	
 		//TODO move randomly
-		moveForward(tstep);
-		rotateLeft(tstep);
+		timeToChangeMove += tstep;
+		if (timeToChangeMove >= 1.0f){
+
+			timeToChangeMove -= 1.0f;
+
+			//Random translate selection
+			int randTranslate = rand() % 10;
+			if      (randTranslate <= 5) randTranslateDir = 0; //dont move
+			else if (randTranslate <= 7) randTranslateDir = 1; //move forward
+			else    					 randTranslateDir =-1; //move backwards
+
+			//Random rotate selection
+			int randRotate = rand() % 10;
+			if      (randRotate <= 5) randRotateDir = 0; //dont move
+			else if (randRotate <= 7) randRotateDir = 1; //rotate left
+			else    				  randRotateDir =-1; //rotate right
+
+		}
+
+		//translation
+		switch(randTranslateDir){
+			case 0:
+				break;
+			case -1:
+				moveBackward(tstep);
+				break;
+			case 1:
+				moveForward(tstep);
+		}
+		//rotation
+		switch(randRotateDir){
+			case 0:
+				break;
+			case -1:
+				rotateRight(tstep);
+				break;
+			case 1:
+				rotateLeft(tstep);
+		}
+
 	}
 }
 
