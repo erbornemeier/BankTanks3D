@@ -66,7 +66,7 @@ private:
 						 *turret = NULL;
 
 
-	const float SPEED = 5.0f, ROT_SPEED = 2.5f;
+	const float SPEED = 10.0f, ROT_SPEED = 2.5f;
 	float timeToChangeMove = 1.0f;
 	int randTranslateDir = 0,
 		randRotateDir    = 0;

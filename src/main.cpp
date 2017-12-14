@@ -832,7 +832,9 @@ int main( int argc, char *argv[] ) {
 	convertSphericalToCartesian();
 
 	CSCI441::setVertexAttributeLocations( attrib_vPos_loc, -1, attrib_vTextureCoord_loc );
-	CSCI441::drawSolidSphere( 1, 16, 16 );	// strange hack I need to make spheres draw - don't have time to investigate why..it's a bug with my library
+	// strange hack I need to make spheres draw - don't have time to investigate why..
+	//it's a bug with my library
+	CSCI441::drawSolidSphere( 1, 16, 16 );
 	//  This is our draw loop - all rendering is done here.  We use a loop to keep the window open
 	//	until the user decides to close the window and quit the program.  Without a loop, the
 	//	window will display once and then the program exits.
