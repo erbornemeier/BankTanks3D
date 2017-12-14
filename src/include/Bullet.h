@@ -9,26 +9,48 @@
 #include <CSCI441/modelLoader3.hpp>
 
 #include <iostream>
+#include <vector>
+using namespace std;
 
 class Bullet{
 
 public:
 
-  Bullet(glm::vec3 pos = glm::vec3(0,0,0),
-         glm::vec3 dir = glm::vec3(1,0,1));
+	Bullet(CSCI441::ModelLoader* tankBase,
+			   glm::vec3 pos = glm::vec3(0,0,0),
+			   glm::vec3 dir = glm::vec3(1,1,1)
+         int maxBounces, float speed = 20.0f);
+	
 
+	void moveForward(float tstep);
 
-  void move(float tstep);
+	bool isColliding();
+	void setBlockColliders(vector<glm::vec3>& blockPos, const float& blockDim);
 
-  glm::vec3 getPosition();
+	void drawBullet(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc,
+		      GLint md_loc, GLint ms_loc, GLint s_loc, GLint ma_loc, GLint txtr);
+
+	void setPosition(glm::vec3 pos);
+  void bounce(glm::vec3 bouncePlane);
+
+	glm::vec3 getPosition();
+	glm::vec3 getDirection();
+	glm::mat4 getModelMatrix();
 
 private:
 
-  //physical properties about the model
-  glm::vec3 position, direction;
+	//physical properties about the model
+	glm::vec3 position, direction;
 
-  //transform matrix to handle translation, rotation, and scaling associated to the model
-  glm::mat4 modelMatrix;
+	//colliders
+	vector<glm::vec3> blockColliders;
+	float blockSize;
 
-  const float SPEED = 15.0f;
-};
+	//transform matrix to handle translation, rotation, and scaling associated to the model
+	glm::mat4 modelMatrix;
+
+	//storage location for the drawable model
+	CSCI441::ModelLoader *base   = NULL,
+
+	float speed;
+};  		
