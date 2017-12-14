@@ -382,10 +382,10 @@ void setupTextures() {
 	// and get handles for our full skybox
   printf( "[INFO]: registering skybox...\n" );
   fflush( stdout );
-  skyboxTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/desert.png"   );
-  redTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/red.png"   );
-  /* greenTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/green.png"   ); */
-  /* brownTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/brown.png"   ); */
+  skyboxTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture("textures/skybox/desert.png");
+  redTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture("textures/red.png");
+  greenTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture("textures/green.png");
+  brownTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture("textures/brown.png");
 
   printf( "[INFO]: skybox textures read in and registered!\n\n" );
 }
@@ -784,6 +784,7 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 
 	// draw the roamers
 	for (EnemyRoamerTank& er: enemyRoamers){
+                glBindTexture(GL_TEXTURE_2D, greenTextureHandle);
 		m = er.getModelMatrix();
 		glm::mat4 mv = viewMatrix * m;
 		glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
