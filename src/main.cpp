@@ -43,6 +43,7 @@ using namespace std;
 #include "PlayerTank.h"
 #include "EnemyRoamerTank.h"
 #include "Level.h"
+#include "Bullet.h"
 
 
 //******************************************************************************
@@ -111,6 +112,7 @@ void loadCurrentLevel();
 //entities
 PlayerTank* playerTank;
 vector<EnemyRoamerTank> enemyRoamers;
+vector<Bullet> bullets;
 //vector<EnemySentryTank*> enemySentrys; TODO
 
 //models
@@ -193,6 +195,12 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 				currentLevel = ++currentLevel%NUM_LEVELS;
 				loadCurrentLevel();
 				break;
+      case GLFW_KEY_SPACE:
+        Bullet b(tankBaseModel,
+                 playerTank->getPosition(),
+                 playerTank->getBaseRotation());
+        bullets.push_back(b);
+        break;
 		}
 	}
 	else if (action == GLFW_RELEASE){
@@ -710,6 +718,9 @@ void updateScene(float tstep){
 	for (EnemyRoamerTank& er: enemyRoamers){
 		er.makeMovement(tstep, playerTank->getPosition());
 	}
+  for (Bullet& b: bullets){
+    b.moveForward(tstep);
+  }
 	convertSphericalToCartesian();
 }
 
@@ -796,6 +807,20 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 		er.drawTurret( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
 						  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
 						  GL_TEXTURE0);
+	}
+
+	// draw the bullets
+	for (Bullet& b: bullets){
+		m = b.getModelMatrix();
+		glm::mat4 mv = viewMatrix * m;
+		glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
+		glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
+		glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
+		glUniform1i( uniform_phong_txtr_loc, 0 );
+		b.drawBullet( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
+					  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
+					  GL_TEXTURE0);
+		modelPhongShaderProgram->useProgram();
 	}
 
 	//TODO draw the sentries

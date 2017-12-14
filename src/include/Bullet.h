@@ -19,7 +19,7 @@ public:
 	Bullet(CSCI441::ModelLoader* base,
 			   glm::vec3 pos = glm::vec3(0,0,0),
 			   glm::vec3 dir = glm::vec3(1,1,1),
-         int maxBounces = 1, float speed = 20.0f);
+         int maxBounces = 1, float speed = 40.0f);
 	
 
 	void moveForward(float tstep);
