@@ -31,7 +31,7 @@ public:
 		      GLint md_loc, GLint ms_loc, GLint s_loc, GLint ma_loc, GLint txtr);
 
 	void setPosition(glm::vec3 pos);
-  void bounce(glm::vec3 bouncePlane);
+  bool bounce(vector<glm::vec3>& blockPositions);
 
 	glm::vec3 getPosition();
 	glm::vec3 getDirection();
@@ -41,6 +41,7 @@ private:
 
 	//physical properties about the model
 	glm::vec3 position, direction;
+  int bounces;
 
 	//colliders
 	vector<glm::vec3> blockColliders;

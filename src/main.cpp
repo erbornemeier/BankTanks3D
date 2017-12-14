@@ -718,8 +718,13 @@ void updateScene(float tstep){
 	for (EnemyRoamerTank& er: enemyRoamers){
 		er.makeMovement(tstep, playerTank->getPosition());
 	}
-  for (Bullet& b: bullets){
-    b.moveForward(tstep);
+
+  for (int i = bullets.size() - 1; i >= 0; i--){
+    bullets[i].moveForward(tstep);
+    bool removeBullet = bullets[i].bounce(levels[currentLevel].getBlockPos());
+    if (removeBullet) {
+      bullets.erase(bullets.begin() + i);
+    }
   }
 	convertSphericalToCartesian();
 }
