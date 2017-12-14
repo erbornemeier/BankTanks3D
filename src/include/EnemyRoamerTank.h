@@ -29,6 +29,11 @@ public:
 	void rotateTurretRight(float timeStep);
 	void setScale(glm::vec3 scale);
 
+	void makeMovement(float tstep, const glm::vec3& playerPos);
+
+	bool isColliding();
+	void setBlockColliders(vector<glm::vec3>& blockPos, const float& blockDim);
+
 	void drawBase(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc, 
 		      GLint md_loc, GLint ms_loc, GLint s_loc, GLint ma_loc, GLint txtr);
 	void drawTurret(GLint vpos_loc, GLint vnorm_loc, GLint vtex_loc, 
@@ -48,9 +53,23 @@ private:
 	//transform matrix to handle translation, rotation, and scaling associated to the model
 	glm::mat4 modelMatrix;
 
+	//colliders
+	vector<glm::vec3> blockColliders;
+	float blockSize;
+	glm::vec3 playerLoc;
+
+	//bounding box properties
+	float tankLength, tankWidth;
+
 	//storage location for the drawable model
 	CSCI441::ModelLoader *base   = NULL,
 						 *turret = NULL;
 
 	const float SPEED = 5.0f, ROT_SPEED = 2.5f;
+
+	//enemy->player visibility check helper methods
+	bool canSeePlayer();
+	bool lineLineCollide(glm::vec3& a1, glm::vec3& a2, 
+						 glm::vec3& b1, glm::vec3& b2);
+	bool lineRectCollide(glm::vec3& blockPos);
 };  		

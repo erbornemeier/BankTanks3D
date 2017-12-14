@@ -62,7 +62,7 @@ bool moveDown = false;
 glm::vec2 mousePosition( -9999.0f, -9999.0f );
 
 //camera paramters
-glm::vec3 cameraAngles( 0.0f, M_PI, 110.0f ); //arcball (theta, phi, radius)
+glm::vec3 cameraAngles( 0.5*M_PI/4.0f, 5.125*M_PI/4.0f, 90.0f ); //arcball (theta, phi, radius)
 glm::vec3 cameraOffset; 					   //camera offset from player
 glm::vec3 upVector( 0.0f,  1.0f,  0.0f );
 
@@ -683,12 +683,13 @@ void loadCurrentLevel(){
 
 	//reset player position
 	playerTank->setPosition(levels[currentLevel].getPlayerPos());
+	playerTank->setBlockColliders(levels[currentLevel].getBlockPos(), Level::BLOCK_DIM);
 
 	//create new enemies and set positions
 	for (glm::vec3& eRPos: levels[currentLevel].getEnemyRoamerPos()){
 		EnemyRoamerTank newRoamer(tankBaseModel, tankTurretModel, eRPos);
+		newRoamer.setBlockColliders(levels[currentLevel].getBlockPos(), Level::BLOCK_DIM);
 		enemyRoamers.push_back(newRoamer);
-		cout << eRPos.x << " " << eRPos.y << " " << eRPos.z << " " << endl;
 	}
 	/*for (glm::vec3& eSPos: levels[currentLevel].getEnemySentryPos()){
 		EnemyRoamerTank newSentry(tankBaseModel, tankTurretModel, eRPos);
@@ -706,6 +707,9 @@ void moveHero(float tstep){
 
 void updateScene(float tstep){
 	moveHero(tstep);
+	for (EnemyRoamerTank& er: enemyRoamers){
+		er.makeMovement(tstep, playerTank->getPosition());
+	}
 	convertSphericalToCartesian();
 }
 
@@ -817,6 +821,7 @@ int main( int argc, char *argv[] ) {
 	setupTextures();								// load all textures into memory
 	setupFramebuffer();								// setup our framebuffer
 	setupLevels();
+	loadCurrentLevel();
 	convertSphericalToCartesian();
 
 	CSCI441::setVertexAttributeLocations( attrib_vPos_loc, -1, attrib_vTextureCoord_loc );

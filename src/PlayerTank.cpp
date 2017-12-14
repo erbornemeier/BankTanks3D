@@ -8,27 +8,51 @@ PlayerTank::PlayerTank(CSCI441::ModelLoader* tankBase, CSCI441::ModelLoader* tan
 	this->position = pos;
 	this->baseRotation = rot;
 	this->scale = scl;
+
+	//TODO change these to more accurate values
+	//right now they are equal to override the lack of a bounding box
+	this->tankLength = 5.0f * scl.z;
+	this->tankWidth  = 5.0f * scl.x;
 }
 
 void PlayerTank::moveForward(float tstep){
 	position.z += SPEED * tstep * cos(baseRotation.y);
+	if (isColliding()) 
+		position.z -= SPEED * tstep * cos(baseRotation.y);
+
 	position.x += SPEED * tstep * sin(baseRotation.y);
+	if (isColliding())
+		position.x -= SPEED * tstep * sin(baseRotation.y);
 }
 
 void PlayerTank::moveBackward(float tstep){
 	position.z -= SPEED * tstep * cos(baseRotation.y);
+	if (isColliding()) 
+		position.z += SPEED * tstep * cos(baseRotation.y);
+
 	position.x -= SPEED * tstep * sin(baseRotation.y);
+	if (isColliding())
+		position.x += SPEED * tstep * sin(baseRotation.y);
 }
 
 void PlayerTank::rotateRight(float tstep){
 	baseRotation.y -= ROT_SPEED * tstep;
 	turretRotation.y -= ROT_SPEED * tstep;
+
+	if (isColliding()){
+		baseRotation.y += ROT_SPEED * tstep;
+		turretRotation.y += ROT_SPEED * tstep;
+	}
 }
 
 void PlayerTank::rotateLeft(float tstep){
 	baseRotation.y += ROT_SPEED * tstep;
 	turretRotation.y += ROT_SPEED * tstep;
 
+	if (isColliding()){
+		baseRotation.y -= ROT_SPEED * tstep;
+		turretRotation.y -= ROT_SPEED * tstep;
+	}
 }
 
 void PlayerTank::rotateTurretRight(float tstep){
@@ -37,6 +61,30 @@ void PlayerTank::rotateTurretRight(float tstep){
 
 void PlayerTank::rotateTurretLeft(float tstep){
 	turretRotation.y += ROT_SPEED * tstep;
+}
+
+bool PlayerTank::isColliding(){
+	for (glm::vec3& blockPos: blockColliders){
+		//if the block is too far away to collide, skip
+		if (glm::length(blockPos - position) > 2.0f * blockSize) continue;
+
+		//simple bounding box collision
+		//TODO instead of the tankWidth/Length replace with bounding box length and width
+		if ((position.x + tankWidth/2.0f) >=  (blockPos.x - blockSize/2.0f) && 
+			(position.x - tankWidth/2.0f) <=  (blockPos.x + blockSize/2.0f) &&
+			(position.z + tankLength/2.0f) >= (blockPos.z - blockSize/2.0f) && 
+			(position.z - tankLength/2.0f) <= (blockPos.z + blockSize/2.0f)){
+			return true;
+		}
+	}
+
+	//no collisions
+	return false;
+}
+
+void PlayerTank::setBlockColliders(vector<glm::vec3>& blockPos, const float& blockDim){
+	blockColliders = blockPos;
+	blockSize = blockDim;
 }
 
 void PlayerTank::setScale(glm::vec3 scale){
