@@ -390,10 +390,10 @@ void setupTextures() {
 	// and get handles for our full skybox
   printf( "[INFO]: registering skybox...\n" );
   fflush( stdout );
-  skyboxTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/desert.png"   );
-  redTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/red.png"   );
-  /* greenTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/green.png"   ); */
-  /* brownTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/brown.png"   ); */
+  skyboxTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture("textures/skybox/desert.png");
+  redTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture("textures/red.png");
+  greenTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture("textures/green.png");
+  brownTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture("textures/brown.png");
 
   printf( "[INFO]: skybox textures read in and registered!\n\n" );
 }
@@ -792,7 +792,6 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	m = playerTank->getTurretModelMatrix();
 	mv = viewMatrix * m;
 	nMtx = glm::transpose( glm::inverse( mv ) );
-	modelPhongShaderProgram->useProgram();
 	glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
 	glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
 	playerTank->drawTurret( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
@@ -801,6 +800,7 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 
 	// draw the roamers
 	for (EnemyRoamerTank& er: enemyRoamers){
+                glBindTexture(GL_TEXTURE_2D, greenTextureHandle);
 		m = er.getModelMatrix();
 		glm::mat4 mv = viewMatrix * m;
 		glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
@@ -813,7 +813,6 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 		m = er.getTurretModelMatrix();
 		mv = viewMatrix * m;
 		nMtx = glm::transpose( glm::inverse( mv ) );
-		modelPhongShaderProgram->useProgram();
 		glUniformMatrix4fv( uniform_phong_mv_loc, 1, GL_FALSE, &mv[0][0] );
 		glUniformMatrix4fv( uniform_phong_norm_loc, 1, GL_FALSE, &nMtx[0][0] );
 		er.drawTurret( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
