@@ -112,6 +112,7 @@ void loadCurrentLevel();
 PlayerTank* playerTank;
 vector<EnemyRoamerTank> enemyRoamers;
 //vector<EnemySentryTank*> enemySentrys; TODO
+GLuint redTextureHandle, greenTextureHandle, brownTextureHandle;
 
 //models
 CSCI441::ModelLoader *tankBaseModel = NULL,
@@ -382,6 +383,10 @@ void setupTextures() {
   printf( "[INFO]: registering skybox...\n" );
   fflush( stdout );
   skyboxTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/skybox/desert.png"   );
+  redTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/red.png"   );
+  /* greenTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/green.png"   ); */
+  /* brownTextureHandle = CSCI441::TextureUtils::loadAndRegisterTexture( "textures/brown.png"   ); */
+
   printf( "[INFO]: skybox textures read in and registered!\n\n" );
 }
 
@@ -758,6 +763,7 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	glUniform1i( uniform_phong_txtr_loc, 0 );
 
 	// draw the player
+        glBindTexture(GL_TEXTURE_2D, redTextureHandle);
 	m = playerTank->getModelMatrix();
 	glm::mat4 mv = viewMatrix * m;
 	glm::mat4 nMtx = glm::transpose( glm::inverse( mv ) );
@@ -766,6 +772,7 @@ void renderScene( glm::mat4 viewMatrix, glm::mat4 projectionMatrix ) {
 	playerTank->drawBase( attrib_phong_vpos_loc, attrib_phong_vnorm_loc, attrib_phong_vtex_loc,
 					  uniform_phong_md_loc, uniform_phong_ms_loc, uniform_phong_s_loc, uniform_phong_ma_loc,
 					  GL_TEXTURE0);
+
 	m = playerTank->getTurretModelMatrix();
 	mv = viewMatrix * m;
 	nMtx = glm::transpose( glm::inverse( mv ) );
